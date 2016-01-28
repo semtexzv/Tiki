@@ -1,0 +1,5 @@
+- World Generation:
+    Use simple subdivision mechanism to get general contours. Tweak roughness and displacement for creating
+    large hills, eg. volcanoes. Then use perlin noise /  some marching algo to create some kind of dungeon.
+
+    I don't even know what will this game be about.. gotta figure that out first

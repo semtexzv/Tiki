@@ -31,9 +31,8 @@ class GameWorld extends  ContactListener {
 
     player.update(delta)
 
-    world.step(delta, 3, 3)
     render.render(world, Game.camera.combined)
-
+    world.step(delta, 5, 5)
   }
 
   override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {

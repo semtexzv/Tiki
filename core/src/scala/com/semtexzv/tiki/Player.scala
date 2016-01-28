@@ -41,18 +41,12 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
   var shape = new PolygonShape()
   fdef.shape = shape
   shape.setAsBox(w,h)
-  /*shape.set(Array(-0.6f,-1.3f,
-    -0.6f,+1.3f,
-    +0.6f,+1.3f,
-    +0.6f,-1.3f
-    ))*/
-
 
   bodyFixt = body.createFixture(fdef)
   bodyFixt.setUserData(FixtureType.PlayerBody)
 
 
-  shape.setAsBox(w*0.9f,0.3f,new Vector2(0,-1.3f),0)
+  shape.setAsBox(w*0.9f,0.3f,new Vector2(0,-1.4f),0)
   fdef.isSensor = true
 
   feetFixt = body.createFixture(fdef)
