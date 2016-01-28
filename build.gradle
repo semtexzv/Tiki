@@ -92,7 +92,6 @@ project(":ios") {
 project(":core") {
     apply plugin: "java"
     apply plugin: "scala"
-    apply plugin: 'provided-base'
 
 
     dependencies {
@@ -105,7 +104,6 @@ project(":core") {
         compile "net.dermetfan.libgdx-utils:libgdx-utils-box2d:0.13.2"
         compile "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
-        compile "net.onedaybeard.artemis:artemis-odb:1.3.1"
     }
 }
 

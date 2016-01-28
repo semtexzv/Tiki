@@ -8,7 +8,7 @@ import scala.util.Random
 /**
   * Created by Semtexzv on 1/27/2016.
   */
-class GameMap() {
+class GameMap(world: World) {
   var blocks  = new Array[Block](Game.MapWidth*Game.MapHeight)
   def setBlock(x:Int,y:Int,value:Block) = blocks(y*Game.MapWidth+x) = value
   def getBlock(x:Int,y:Int) : Block = {
@@ -20,7 +20,7 @@ class GameMap() {
   }
   for (y<-0 until Game.MapHeight)
     for( x<-0 until Game.MapWidth){
-      setBlock(x,y,(if(Random.nextInt(5)<1) new Block(x,y) else null))
+      setBlock(x,y,if(Random.nextInt(5)<5) new Block(x,y,world) else null)
     }
 
 }
