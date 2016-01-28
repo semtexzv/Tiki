@@ -21,7 +21,7 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
   def standing :Boolean = math.abs(body.getLinearVelocity.y ) < 0.01f && gndContacts >0
 
   val acc = 100f
-  var mx = 10f
+  var mx = 20f
 
 
   val w = 0.6f
@@ -59,7 +59,7 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
 
   feetFixt.setUserData(FixtureType.PlayerFeet)
 
-  shape.setAsBox(w*1.2f,h*0.95f,new Vector2(0,0f),0)
+  shape.setAsBox(w*1.5f,h*0.95f,new Vector2(0,0f),0)
 
   wideFixt = body.createFixture(fdef)
   wideFixt.setUserData(FixtureType.PlayerWide)
@@ -82,8 +82,8 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
       vel.set(0, vel.y)
     }
 
-    if (Gdx.input.isKeyPressed(Keys.UP) && standing) {
-      vel.set(vel.x, 15)
+    if (Gdx.input.isKeyPressed(Keys.UP)/* && standing*/) {
+      vel.set(vel.x, 20)
     }
     body.setLinearVelocity(vel)
   }

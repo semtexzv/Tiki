@@ -1,6 +1,6 @@
 package com.semtexzv.tiki
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.{InputProcessor, Gdx}
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
@@ -16,23 +16,23 @@ class GameWorld extends  ContactListener {
   var render = new Box2DDebugRenderer()
 
 
-  val world = new box2d.World(new Vector2(0,-30f),true)
+  val world = new box2d.World(new Vector2(0, -30f), true)
   world.setContactListener(this)
   world.setContinuousPhysics(true)
-  var player: Player = new Player(world,1,Game.MapHeight)
-  var map : GameMap = new GameMap(world)
+  var player: Player = new Player(world, 1, Game.MapHeight)
+  var map: GameMap = new GameMap(world)
 
-  def render(delta:Float): Unit = {
+  def render(delta: Float): Unit = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-    Game.camera.position.set(player.position.x,player.position.y,0)
+    Game.camera.position.set(player.position.x, player.position.y, 0)
     Game.camera.zoom = Game.zoom
     Game.camera.update()
 
     player.update(delta)
 
-    world.step(delta,3,3)
-    render.render(world,Game.camera.combined)
+    world.step(delta, 3, 3)
+    render.render(world, Game.camera.combined)
 
   }
 
@@ -43,22 +43,22 @@ class GameWorld extends  ContactListener {
   override def endContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
-    if(typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock){
-      player.gndContacts -=1
+    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
+      player.gndContacts -= 1
     }
-    if(typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock){
-      player.wideContacts -=1
+    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock) {
+      player.wideContacts -= 1
     }
   }
 
   override def beginContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
-    if(typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock){
-      player.gndContacts +=1
+    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
+      player.gndContacts += 1
     }
-    if(typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock){
-      player.wideContacts +=1
+    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock) {
+      player.wideContacts += 1
     }
   }
 
@@ -66,15 +66,14 @@ class GameWorld extends  ContactListener {
 
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
-    if(typeA == FixtureType.PlayerBody && typeB == FixtureType.GroundBlock){
-      if(player.gndContacts  <=0 && contact.getWorldManifold.getNormal.y == -1 ){
+    if (typeA == FixtureType.PlayerBody && typeB == FixtureType.GroundBlock) {
+      if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y == -1) {
         contact.setEnabled(false)
       }
-      if(player.wideContacts  <=0 && contact.getWorldManifold.getNormal.x != 0 ){
+      if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
         contact.setEnabled(false)
       }
     }
-
-
   }
 }
+

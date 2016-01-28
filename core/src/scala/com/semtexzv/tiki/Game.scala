@@ -12,8 +12,8 @@ import com.semtexzv.tiki.screens.GameScreen
   * Created by Semtexzv on 1/27/2016.
   */
 object Game extends  gGame {
-  final val MapWidth = 128
-  final val MapHeight = 32
+  final val MapWidth = 512
+  final val MapHeight = 128
   var zoom: Float = 1f
 
   lazy val camera = new OrthographicCamera(1,1)
