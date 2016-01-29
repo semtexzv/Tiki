@@ -20,8 +20,8 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
   var wideContacts:Int = 0
   def standing :Boolean = math.abs(body.getLinearVelocity.y ) < 0.01f && gndContacts >0
 
-  val acc = 100f
-  var mx = 20f
+  val acc = 80f
+  var mx = 10f
 
 
   val w = 0.6f
@@ -76,8 +76,8 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
       vel.set(0, vel.y)
     }
 
-    if (Gdx.input.isKeyPressed(Keys.UP)/* && standing*/) {
-      vel.set(vel.x, 20)
+    if (Gdx.input.isKeyPressed(Keys.UP) && standing) {
+      vel.set(vel.x, 15)
     }
     body.setLinearVelocity(vel)
   }

@@ -1,5 +1,6 @@
 package com.semtexzv.tiki
 
+import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.{InputProcessor, Gdx}
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.math.Vector2
@@ -11,16 +12,36 @@ import com.semtexzv.tiki.Map.{Block, GameMap}
 /**
   * Created by Semtexzv on 1/27/2016.
   */
-class GameWorld extends  ContactListener {
+class GameWorld extends ContactListener {
+  Game.world = this
+  object bodyPool extends  Pool[Body]{
+    override def newObject(): Body = {
+      var bdef = new BodyDef
+      bdef.`type` = BodyType.StaticBody
+      bdef.fixedRotation = true
+      var body = world.createBody(bdef)
+      body.setUserData(this)
+      var fdef = new FixtureDef
+      fdef.density = 0f
+      fdef.friction = 0f
+      fdef.restitution = 0f
+      var shape = new PolygonShape()
+      fdef.shape = shape
+      shape.setAsBox(0.5f, 0.5f)
+      var fixt = body.createFixture(fdef)
+      fixt.setUserData(FixtureType.GroundBlock)
+      return body
+    }
+  }
   Box2D.init()
   var render = new Box2DDebugRenderer()
-
 
   val world = new box2d.World(new Vector2(0, -30f), true)
   world.setContactListener(this)
   world.setContinuousPhysics(true)
-  var player: Player = new Player(world, 1, Game.MapHeight)
+  var player: Player = new Player(world, 1, Game.ChunkHeight)
   var map: GameMap = new GameMap(world)
+  var retainTime = 0f
 
   def render(delta: Float): Unit = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -31,17 +52,44 @@ class GameWorld extends  ContactListener {
 
     player.update(delta)
 
+    var px: Int = player.position.x.toInt
+    var py: Int = player.position.y.toInt
+
+
+    val time = System.nanoTime()
+
+    for (y<- -10 to 10){
+      for (x<- -10 to 10){
+        if(x > -4 && x < 4 && y> -4 && y< 4) {
+          var block = map.getBlock(x + px, y + py)
+          if (block != null && block.body == null && block.typ != Game.Air) {
+            block.getBody()
+          }
+        }
+        else {
+          var block = map.getBlock(x + px, y + py)
+          if (block != null && block.body != null) {
+            block.freeBody()
+          }
+        }
+      }
+    }
+
+    world.step(delta, 3, 3)
+    println("Time: "+(System.nanoTime()-time)/1000000f)
+
+    map.render(px,py)
     render.render(world, Game.camera.combined)
-    world.step(delta, 5, 5)
   }
+
 
   override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {
 
   }
 
   override def endContact(contact: Contact): Unit = {
-    var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
-    var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
+    var typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
+    var typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
     if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
       player.gndContacts -= 1
     }
@@ -51,8 +99,8 @@ class GameWorld extends  ContactListener {
   }
 
   override def beginContact(contact: Contact): Unit = {
-    var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
-    var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
     if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
       player.gndContacts += 1
     }
@@ -63,8 +111,8 @@ class GameWorld extends  ContactListener {
 
   override def preSolve(contact: Contact, oldManifold: Manifold): Unit = {
 
-    var typeA = contact.getFixtureA.getUserData.asInstanceOf[EntityType]
-    var typeB = contact.getFixtureB.getUserData.asInstanceOf[EntityType]
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
     if (typeA == FixtureType.PlayerBody && typeB == FixtureType.GroundBlock) {
       if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y == -1) {
         contact.setEnabled(false)

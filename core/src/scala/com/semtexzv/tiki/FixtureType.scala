@@ -3,10 +3,11 @@ package com.semtexzv.tiki
 /**
   * Created by Semtexzv on 1/28/2016.
   */
-object FixtureType extends Enumeration{
+object FixtureType {
 
-  type FixtureType = Value
-
-  val PlayerFeet, GroundBlock, PlayerBody,PlayerWide = Value
+  final val PlayerFeet:Int = 0
+  final val GroundBlock:Int = 1
+  final val PlayerBody:Int = 2
+  final val PlayerWide:Int = 3
 
 }

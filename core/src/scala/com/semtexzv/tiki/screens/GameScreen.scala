@@ -3,7 +3,7 @@ package com.semtexzv.tiki.screens
 import com.badlogic.gdx.{Gdx, InputProcessor, Screen}
 import com.badlogic.gdx.graphics.{Color, Texture, Pixmap}
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.semtexzv.tiki.{Game, SimplexJava, GameWorld}
+import com.semtexzv.tiki.{Game, GameWorld}
 
 /**
   * Created by Semtexzv on 1/27/2016.

@@ -1,5 +1,6 @@
 package com.semtexzv.tiki.Map
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.semtexzv.tiki.Game
 
 /**
@@ -12,7 +13,7 @@ class Chunk(var x:Float) {
   def index(x: Int, y: Int) = x + y * Game.ChunkWidth
 
   def getBlock(x: Int, y: Int): Block = {
-    if (y > 0 && y < Game.ChunkHeight && x > this.x && x < this.x + Game.ChunkWidth) {
+    if (y >= 0 && y < Game.ChunkHeight && x >= this.x && x < this.x + Game.ChunkWidth) {
       blocks(index(x % Game.ChunkWidth, y))
     } else null
   }
@@ -22,5 +23,8 @@ class Chunk(var x:Float) {
     if (i < blocks.length) {
       blocks(i) = block
     }
+  }
+  def render(renderer:ShapeRenderer): Unit ={
+    blocks.foreach((a) => if (a != null){ a.render(renderer)})
   }
 }
