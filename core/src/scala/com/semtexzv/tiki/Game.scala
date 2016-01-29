@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.{CircleShape, PolygonShape, FixtureDef, BodyDef}
 import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.{Game => gGame}
-import com.semtexzv.tiki.screens.GameScreen
+import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
 
 /**
   * Created by Semtexzv on 1/27/2016.
@@ -28,7 +28,7 @@ object Game extends  gGame {
 
 
   override def create(): Unit = {
-    this.setScreen(gameScreen)
+    this.setScreen(new GenScreen)
   }
 
   override def resize(width: Int, height: Int): Unit = {

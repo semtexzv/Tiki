@@ -44,7 +44,7 @@ class GameMap(world: World) {
     }
   }
   def genHeight(leftIndex:Int, rightIndex:Int, displacement:Float) {
-    var roughness = 0.5f
+    var roughness = 0.4f
     if((leftIndex + 1) == rightIndex) return
     var midIndex = Math.floor((leftIndex + rightIndex) / 2).toInt
     var change = noise.noise(midIndex/4f,0).toFloat * displacement
