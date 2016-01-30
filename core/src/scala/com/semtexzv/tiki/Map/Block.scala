@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
+import com.semtexzv.tiki.inventory.{ItemType, Item}
 import com.semtexzv.tiki.{TileManager, GameWorld, FixtureType, Game}
 
 import scala.util.Random
@@ -64,19 +65,11 @@ class Block(val x:Float,val y:Float,val typ:BlockType)  {
     }
   }
 
-  override def hashCode(): Int = {
-    Hash
-  }
-
-  override def equals(obj: Any): Boolean = {
-    if(obj.isInstanceOf[Block]){
-      return Hash == obj.asInstanceOf[Block].Hash
+  def getDrop: Item = {
+    typ match {
+      case BlockType.Dirt => new Item(ItemType.Dirt,1)
+      case _ => null
     }
-    return false
-    /*obj match {
-      case obj:Block => Hash == obj.Hash
-      case _ => false
-    }*/
   }
 
 }

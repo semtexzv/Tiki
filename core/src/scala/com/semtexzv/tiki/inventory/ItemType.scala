@@ -1,5 +1,4 @@
-package com.semtexzv.tiki
-
+package com.semtexzv.tiki.inventory
 
 /**
   * Created by Semtexzv on 1/30/2016.

@@ -14,9 +14,11 @@ import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
 object Game extends gGame {
 
   final val ChunkWidth = 64
-  final val ChunkMask = 63
-  final val ChunkShift = 6
+  final val ChunkWidthMask = ChunkWidth-1
+  final val ChunkWidthShift = 6
+
   final val ChunkHeight = 64
+  final val ChunkHeightMask = ChunkHeight-1
 
   var zoom: Float = 1f
 

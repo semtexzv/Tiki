@@ -26,35 +26,31 @@ class GameMap(world: World) {
     if (chunks(chx) == null) {
       chunks(chx) = new Chunk(chx * Game.ChunkWidth)
     }
-    val chunk = chunks(chx)
-    val baseX = chx * Game.ChunkWidth
+  }
 
     for (y <- 0 until Game.ChunkHeight) {
-      for (x <- 0 until Game.ChunkWidth) {
-        if (gen.map(gen.index(x + baseX, y)) != Game.Air)
-          chunk.setBlock(x, y,
-            new Block(x + baseX, y,
-              getBlockType(gen.map(gen.index(x + baseX, y)))))
+      for (x <- 0 until Game.ChunkWidth * (chCount - 1)) {
+        if (gen.map(gen.index(x, y)) != Game.Air)
+          setBlock(x, y, new Block(x, y, getBlockType(gen.map(gen.index(x, y)))))
       }
     }
     for (y <- 0 until Game.ChunkHeight) {
-      for (x <- 0 until Game.ChunkWidth) {
-        if (gen.map(gen.index(x + baseX, y)) != Game.Air) {
-          updateBlockTexture(x + baseX, y)
+      for (x <- 0 until Game.ChunkWidth* (chCount - 1)) {
+        if (gen.map(gen.index(x , y)) != Game.Air) {
+          updateBlockTexture(x , y)
         }
       }
     }
-  }
+
 
   def updateBlockTexture(x: Int, y: Int): Unit = {
-    var block = getBlock(x,y)
+    val block = getBlock(x,y)
     if(block != null) {
       var state = 0
       for (yy <- -1 to 1) {
         for (xx <- -1 to 1) {
           var neighbor = getBlock(x + xx, y + yy)
-          if (neighbor != null && neighbor.typ == block.typ) {}
-          else {
+          if (neighbor == null || neighbor.typ != block.typ) {
             state |= TileManager.getIncrement(xx, yy)
           }
         }
@@ -65,32 +61,32 @@ class GameMap(world: World) {
     }
   }
 
-
-
   def updateNighbors(x:Int,y:Int): Unit = {
     for (yy <- -1 to 1) {
       for (xx <- -1 to 1) {
-
         updateBlockTexture(x+xx,y+yy)
       }
     }
   }
 
 
-  var batch = new SpriteBatch()
+
+  def index(x: Int, y: Int) = x + y * Game.ChunkWidth
 
   def setBlock(x:Int,y:Int,block:Block) :Unit = {
-    val c = chunks(x>>>Game.ChunkShift)
-    if (x >= 0 && c != null) {
-       c.setBlock(x, y,block)
+    if (x >= 0 && y> 0) {
+      val c = chunks(x>>>Game.ChunkWidthShift)
+      if (c != null) {
+        c.blocks(index(x & Game.ChunkWidthMask, y & Game.ChunkHeightMask)) = block
+      }
     }
   }
 
   def getBlock(x:Int,y:Int) : Block = {
-    if (x >= 0) {
-      val c = chunks(x>>>Game.ChunkShift)
+    if (x >= 0 && y> 0) {
+      val c = chunks(x>>>Game.ChunkWidthShift)
       if(c!= null) {
-        return c.getBlock(x, y)
+        return c.blocks(index(x & Game.ChunkWidthMask, y & Game.ChunkHeightMask))
       }
     }
     null
@@ -106,6 +102,7 @@ class GameMap(world: World) {
     }
   }
 
+  var batch = new SpriteBatch()
   def render(x:Int, y:Int): Unit ={
     batch.setProjectionMatrix(Game.camera.combined)
     batch.begin()

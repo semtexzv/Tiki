@@ -8,7 +8,8 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.EntityType.EntityType
+import com.semtexzv.tiki.entities.{ItemDrop, Player, Entity, EntityType}
+import EntityType.EntityType
 import com.semtexzv.tiki.Map.{Block, GameMap}
 
 import scala.collection.immutable.HashSet
@@ -47,8 +48,10 @@ class GameWorld extends ContactListener  {
   world.setContactListener(this)
   world.setContinuousPhysics(true)
 
-  var player: Player = new Player(world, 1, Game.ChunkHeight)
-  var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity](player)
+  var player: Player = new Player(1, Game.ChunkHeight,world)
+  var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
+  var removedEntities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
+  spawnEntity(player )
 
   var neededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
   var notNeededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
@@ -80,6 +83,7 @@ class GameWorld extends ContactListener  {
           b.freeBody()
           map.setBlock(clickX,clickY,null)
           map.updateNighbors(clickX,clickY)
+          spawnEntity(new ItemDrop(clickX,clickY,b.getDrop,world))
         }
       }
     }
@@ -103,6 +107,14 @@ class GameWorld extends ContactListener  {
         }
       }
     })
+    if(removedEntities.nonEmpty){
+      removedEntities.foreach(a=>{
+        a.onDespawn()
+        entities.remove(a)
+      })
+      removedEntities.clear()
+    }
+
     notNeededBlocks --= neededBlocks
     neededBlocks.foreach(_.obtainBody())
     neededBlocks.clear()
@@ -120,6 +132,13 @@ class GameWorld extends ContactListener  {
     render.render(world, Game.camera.combined)
   }
 
+  def spawnEntity(e: Entity): Unit ={
+    e.onSpawn()
+    entities.add(e)
+  }
+  def despawnEntity(e:Entity): Unit ={
+    removedEntities.add(e)
+  }
 
   override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {
 
@@ -149,16 +168,25 @@ class GameWorld extends ContactListener  {
 
   override def preSolve(contact: Contact, oldManifold: Manifold): Unit = {
 
+
     val typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
-    if (typeA == FixtureType.PlayerBody && typeB == FixtureType.GroundBlock) {
-      if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y == -1) {
+    if (typeA == FixtureType.PlayerBody)
+      if (typeB == FixtureType.GroundBlock) {
+        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y == -1) {
+          contact.setEnabled(false)
+        }
+        if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
+          contact.setEnabled(false)
+        }
+      }
+      else if (typeB == FixtureType.ItemDrop) {
+        var drop = contact.getFixtureB.getBody.getUserData.asInstanceOf[ItemDrop]
+        if (player.inventory.addItem(drop.item)) {
+          despawnEntity(contact.getFixtureB.getBody.getUserData.asInstanceOf[Entity])
+        }
         contact.setEnabled(false)
       }
-      if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
-        contact.setEnabled(false)
-      }
-    }
   }
 
 
