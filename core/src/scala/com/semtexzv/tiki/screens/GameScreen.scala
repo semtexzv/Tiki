@@ -13,10 +13,11 @@ class GameScreen extends  Screen with  InputProcessor{
 
   override def show(): Unit = {
 
-    Gdx.input.setInputProcessor(this)
+    Game.input.addProcessor(this)
   }
   override def hide(): Unit = {
 
+    Game.input.removeProcessor(this)
   }
 
   override def render(delta: Float): Unit = {

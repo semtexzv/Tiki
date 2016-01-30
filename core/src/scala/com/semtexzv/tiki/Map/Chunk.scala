@@ -1,5 +1,6 @@
 package com.semtexzv.tiki.Map
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.semtexzv.tiki.Game
 
@@ -24,7 +25,7 @@ class Chunk(var x:Float) {
       blocks(i) = block
     }
   }
-  def render(renderer:ShapeRenderer): Unit ={
-    blocks.foreach((a) => if (a != null){ a.render(renderer)})
+  def render(batch: SpriteBatch): Unit ={
+    blocks.foreach((a) => if (a != null){ a.render(batch)})
   }
 }

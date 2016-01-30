@@ -1,8 +1,8 @@
 package com.semtexzv.tiki
 
 import com.badlogic.gdx.utils.Pool
-import com.badlogic.gdx.{InputProcessor, Gdx}
-import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.{Input, InputProcessor, Gdx}
+import com.badlogic.gdx.graphics.{Color, GL20}
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
@@ -12,8 +12,9 @@ import com.semtexzv.tiki.Map.{Block, GameMap}
 /**
   * Created by Semtexzv on 1/27/2016.
   */
-class GameWorld extends ContactListener {
+class GameWorld extends ContactListener with InputProcessor {
   Game.world = this
+  Game.input.addProcessor(this)
   object bodyPool extends  Pool[Body]{
     override def newObject(): Body = {
       var bdef = new BodyDef
@@ -33,6 +34,8 @@ class GameWorld extends ContactListener {
       return body
     }
   }
+
+
   Box2D.init()
   var render = new Box2DDebugRenderer()
 
@@ -42,16 +45,30 @@ class GameWorld extends ContactListener {
   var player: Player = new Player(world, 1, Game.ChunkHeight)
   var map: GameMap = new GameMap(world)
   var retainTime = 0f
+  var clicked = false
+
+  var clickX : Int = 0
+  var clickY : Int = 0
+
 
   def render(delta: Float): Unit = {
+    val ccl  =Color.CYAN
+    Gdx.gl.glClearColor(ccl.r,ccl.g,ccl.b,1.0f)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
     Game.camera.position.set(player.position.x, player.position.y, 0)
     Game.camera.zoom = Game.zoom
     Game.camera.update()
 
-    player.update(delta)
+    if(clicked){
+      var b = map.getBlock(clickX,clickY)
+      if(b != null){
+        b.damage(delta*100)
+      }
+    }
 
+
+    player.update(delta)
     var px: Int = player.position.x.toInt
     var py: Int = player.position.y.toInt
 
@@ -76,7 +93,7 @@ class GameWorld extends ContactListener {
     }
 
     world.step(delta, 3, 3)
-    println("Time: "+(System.nanoTime()-time)/1000000f)
+    //println("Time: "+(System.nanoTime()-time)/1000000f)
 
     map.render(px,py)
     render.render(world, Game.camera.combined)
@@ -122,5 +139,44 @@ class GameWorld extends ContactListener {
       }
     }
   }
+
+  def worldClicked(x:Float,y:Float): Unit = {
+    println("xd "+x+" yd "+y)
+    println("x "+math.round(x)+" y "+math.round(y))
+  }
+
+  override def mouseMoved(screenX: Int, screenY: Int): Boolean = false
+
+  override def keyTyped(character: Char): Boolean = false
+
+  override def keyDown(keycode: Int): Boolean = false
+
+  override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
+
+    if(pointer ==  Input.Buttons.LEFT ) {
+      clicked = true
+      val w = Game.viewport.unproject(new Vector2(screenX, screenY))
+      clickX = math.round(w.x)
+      clickY = math.round(w.y)
+    }
+    true
+
+  }
+  override def touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean = {
+    val w = Game.viewport.unproject(new Vector2(screenX, screenY))
+    clickX = math.round(w.x)
+    clickY = math.round(w.y)
+    true
+  }
+
+  override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
+    clicked = false
+    true
+  }
+  override def keyUp(keycode: Int): Boolean = false
+
+  override def scrolled(amount: Int): Boolean = false
+
+
 }
 

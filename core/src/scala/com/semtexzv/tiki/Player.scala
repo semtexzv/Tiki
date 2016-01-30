@@ -29,6 +29,7 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
   var bdef = new BodyDef
   bdef.`type` = BodyType.DynamicBody
   bdef.fixedRotation=true
+  bdef.allowSleep = false
 
   body = world.createBody(bdef)
 

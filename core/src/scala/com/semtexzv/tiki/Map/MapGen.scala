@@ -13,6 +13,7 @@ import net.dermetfan.utils.math.Noise
 class MapGen(val w:Int, val h:Int) {
 
   var map: Array[Int] = new Array[Int](w * h)
+
   var pixmap = new Pixmap(w, h, Pixmap.Format.RGB888)
   var texture: Texture = null
   var heights: Array[Float] = new Array[Float](w)
