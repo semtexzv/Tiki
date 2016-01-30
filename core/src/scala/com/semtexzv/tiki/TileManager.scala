@@ -2,6 +2,9 @@ package com.semtexzv.tiki
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.semtexzv.tiki.Map.BlockType
+import com.semtexzv.tiki.Map.BlockType
+import com.semtexzv.tiki.Map.BlockType.BlockType
 
 import scala.collection.immutable.HashMap
 
@@ -9,7 +12,7 @@ import scala.collection.immutable.HashMap
   * Created by Semtexzv on 1/30/2016.
   */
 object TileManager {
-  lazy val sheet : Texture  = new Texture("sheet.png")
+  lazy val sheet : Texture  = new Texture("sheetGS.png")
 
 
   final val testBlock = 1
@@ -68,20 +71,24 @@ Tile number is combination of these numbers, if the bit is set, the tile is miss
     DiagBottomRight -> getRegion(3,0)
   )
 
-  var tileMap : HashMap[Int,HashMap[Int,TextureRegion]] = HashMap(testBlock -> testBlockMap)
+  var tileMap : HashMap[BlockType,HashMap[Int,TextureRegion]] = HashMap(BlockType.Dirt -> testBlockMap)
 
-  def getSubTile(tileType:Int,tileState:Int,tileIndex:Int): TextureRegion = {
-    val s = tileState & masks(tileIndex)
-    if(s > 0x0F) {
-      tileMap(testBlock)(tileState & masks(tileIndex) & 0xF0)
+  def getSubTile(blockType:BlockType,tileState:Int,tileIndex:Int): TextureRegion = {
+    if(tileMap.contains(blockType)) {
+      val s = tileState & masks(tileIndex)
+      if (s > 0x0F) {
+       return tileMap(blockType)(tileState & masks(tileIndex) & 0xF0)
+      }
+      else {
+        return tileMap(blockType)(tileState & masks(tileIndex) & 0x0f)
+      }
     }
-    else{
-      tileMap(testBlock)(tileState & masks(tileIndex) & 0x0f)
-    }
+     null
   }
+
   final val SubTileSize = 16
   private def  getRegion(x:Int,y:Int): TextureRegion ={
-     new TextureRegion(sheet,x*SubTileSize,y*SubTileSize,SubTileSize,SubTileSize);
+     new TextureRegion(sheet,x*SubTileSize,y*SubTileSize,SubTileSize,SubTileSize)
   }
 
 }

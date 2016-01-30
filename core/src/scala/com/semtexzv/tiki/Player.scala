@@ -9,7 +9,7 @@ import com.badlogic.gdx.physics.box2d._
 /**
   * Created by Semtexzv on 1/28/2016.
   */
-class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
+class Player(world:World,xx:Float,yy:Float) extends Entity(EntityType.Player){
   var body : Body = null
 
   var bodyFixt: Fixture = null
@@ -33,7 +33,7 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
 
   body = world.createBody(bdef)
 
-  body.setTransform(x,y,0)
+  body.setTransform( xx,yy,0)
 
   var fdef = new FixtureDef
   fdef.density = 1f
@@ -83,4 +83,7 @@ class Player(world:World,x:Float,y:Float) extends Entity(EntityType.Player){
     body.setLinearVelocity(vel)
   }
 
+  override def x: Float = position.x
+
+  override def y: Float = position.y
 }

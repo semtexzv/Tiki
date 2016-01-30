@@ -5,9 +5,9 @@ package com.semtexzv.tiki
   */
 object FixtureType {
 
-  final val PlayerFeet:Int = 0
-  final val GroundBlock:Int = 1
-  final val PlayerBody:Int = 2
-  final val PlayerWide:Int = 3
-
+  final val GroundBlock: Int = 0
+  final val PlayerBody: Int = 1
+  final val PlayerFeet: Int = 2
+  final val PlayerWide: Int = 3
+  final val ItemDrop: Int = 4
 }

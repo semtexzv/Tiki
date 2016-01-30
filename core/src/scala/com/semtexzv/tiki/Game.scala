@@ -13,8 +13,10 @@ import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
   */
 object Game extends gGame {
 
-  final val ChunkWidth = 128
-  final val ChunkHeight = 256
+  final val ChunkWidth = 64
+  final val ChunkMask = 63
+  final val ChunkShift = 6
+  final val ChunkHeight = 64
 
   var zoom: Float = 1f
 

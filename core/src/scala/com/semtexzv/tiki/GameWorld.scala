@@ -1,5 +1,6 @@
 package com.semtexzv.tiki
 
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.{Input, InputProcessor, Gdx}
 import com.badlogic.gdx.graphics.{Color, GL20}
@@ -9,12 +10,15 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.EntityType.EntityType
 import com.semtexzv.tiki.Map.{Block, GameMap}
+
+import scala.collection.immutable.HashSet
+
 /**
   * Created by Semtexzv on 1/27/2016.
   */
-class GameWorld extends ContactListener with InputProcessor {
+class GameWorld extends ContactListener  {
+
   Game.world = this
-  Game.input.addProcessor(this)
   object bodyPool extends  Pool[Body]{
     override def newObject(): Body = {
       var bdef = new BodyDef
@@ -42,7 +46,13 @@ class GameWorld extends ContactListener with InputProcessor {
   val world = new box2d.World(new Vector2(0, -30f), true)
   world.setContactListener(this)
   world.setContinuousPhysics(true)
+
   var player: Player = new Player(world, 1, Game.ChunkHeight)
+  var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity](player)
+
+  var neededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
+  var notNeededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
+
   var map: GameMap = new GameMap(world)
   var retainTime = 0f
   var clicked = false
@@ -51,6 +61,8 @@ class GameWorld extends ContactListener with InputProcessor {
   var clickY : Int = 0
 
 
+  var batch = new SpriteBatch()
+  var blockFlushTime = 0f
   def render(delta: Float): Unit = {
     val ccl  =Color.CYAN
     Gdx.gl.glClearColor(ccl.r,ccl.g,ccl.b,1.0f)
@@ -64,38 +76,47 @@ class GameWorld extends ContactListener with InputProcessor {
       var b = map.getBlock(clickX,clickY)
       if(b != null){
         b.damage(delta*100)
+        if(b.health< 0){
+          b.freeBody()
+          map.setBlock(clickX,clickY,null)
+          map.updateNighbors(clickX,clickY)
+        }
       }
     }
 
 
-    player.update(delta)
-    var px: Int = player.position.x.toInt
-    var py: Int = player.position.y.toInt
-
-
-    val time = System.nanoTime()
-
-    for (y<- -10 to 10){
-      for (x<- -10 to 10){
-        if(x > -4 && x < 4 && y> -4 && y< 4) {
-          var block = map.getBlock(x + px, y + py)
-          if (block != null && block.body == null && block.typ != Game.Air) {
-            block.getBody()
-          }
-        }
-        else {
-          var block = map.getBlock(x + px, y + py)
-          if (block != null && block.body != null) {
-            block.freeBody()
+    entities.foreach(e => {
+      e.update(delta)
+      val ex: Int = e.x.toInt
+      val ey: Int = e.y.toInt
+      for (y<- -7 to 7) {
+        for (x <- -7 to 7) {
+          var block = map.getBlock(x+ex,y+ey)
+          if(block!= null && block.typ != Game.Air){
+            if(x > -4 && x < 4 && y> -4 && y< 4){
+              neededBlocks += block
+            }
+            else{
+              notNeededBlocks += block
+            }
           }
         }
       }
+    })
+    notNeededBlocks --= neededBlocks
+    neededBlocks.foreach(_.obtainBody())
+    neededBlocks.clear()
+    blockFlushTime += delta
+    if(blockFlushTime > 2f){
+      notNeededBlocks.foreach(_.freeBody())
+      notNeededBlocks.clear()
+      blockFlushTime = 0f
     }
 
     world.step(delta, 3, 3)
     //println("Time: "+(System.nanoTime()-time)/1000000f)
 
-    map.render(px,py)
+    map.render(0,0)
     render.render(world, Game.camera.combined)
   }
 
@@ -139,43 +160,6 @@ class GameWorld extends ContactListener with InputProcessor {
       }
     }
   }
-
-  def worldClicked(x:Float,y:Float): Unit = {
-    println("xd "+x+" yd "+y)
-    println("x "+math.round(x)+" y "+math.round(y))
-  }
-
-  override def mouseMoved(screenX: Int, screenY: Int): Boolean = false
-
-  override def keyTyped(character: Char): Boolean = false
-
-  override def keyDown(keycode: Int): Boolean = false
-
-  override def touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
-
-    if(pointer ==  Input.Buttons.LEFT ) {
-      clicked = true
-      val w = Game.viewport.unproject(new Vector2(screenX, screenY))
-      clickX = math.round(w.x)
-      clickY = math.round(w.y)
-    }
-    true
-
-  }
-  override def touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean = {
-    val w = Game.viewport.unproject(new Vector2(screenX, screenY))
-    clickX = math.round(w.x)
-    clickY = math.round(w.y)
-    true
-  }
-
-  override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
-    clicked = false
-    true
-  }
-  override def keyUp(keycode: Int): Boolean = false
-
-  override def scrolled(amount: Int): Boolean = false
 
 
 }
