@@ -12,7 +12,7 @@ import scala.collection.immutable.HashMap
   * Created by Semtexzv on 1/30/2016.
   */
 object TileManager {
-  lazy val sheet : Texture  = new Texture("sheetGS.png")
+  lazy val sheet : Texture  = new Texture("sheet.png")
 
 
   final val testBlock = 1
@@ -54,7 +54,8 @@ Tile number is combination of these numbers, if the bit is set, the tile is miss
   def getIncrement(x:Int, y:Int): Int ={
     StateIncrements(x+1+(y+1)*3)
   }
-  var testBlockMap : HashMap[Int,TextureRegion] = HashMap(
+
+  var dirtMap : HashMap[Int,TextureRegion] = HashMap(
     Top+Left -> getRegion(0,0),
     Top -> getRegion(1,0),
     Top+Right -> getRegion(2,0),
@@ -71,7 +72,26 @@ Tile number is combination of these numbers, if the bit is set, the tile is miss
     DiagBottomRight -> getRegion(3,0)
   )
 
-  var tileMap : HashMap[BlockType,HashMap[Int,TextureRegion]] = HashMap(BlockType.Dirt -> testBlockMap)
+  var stoneMap : HashMap[Int,TextureRegion] = HashMap(
+    Top+Left -> getRegion(0,3),
+    Top -> getRegion(1,3),
+    Top+Right -> getRegion(2,3),
+    Left -> getRegion(0,4),
+    0 -> getRegion(1,4),
+    Right-> getRegion(2,4),
+    Bottom+Left -> getRegion(0,5),
+    Bottom -> getRegion(1,5),
+    Bottom+Right -> getRegion(2,5),
+
+    DiagTopLeft -> getRegion(4,4),
+    DiagTopRight -> getRegion(3,4),
+    DiagBottomLeft  -> getRegion(4,3),
+    DiagBottomRight -> getRegion(3,3)
+  )
+
+  var tileMap : HashMap[BlockType,HashMap[Int,TextureRegion]] = HashMap(
+    BlockType.Wall -> dirtMap,
+    BlockType.Exit -> stoneMap)
 
   def getSubTile(blockType:BlockType,tileState:Int,tileIndex:Int): TextureRegion = {
     if(tileMap.contains(blockType)) {
@@ -86,7 +106,7 @@ Tile number is combination of these numbers, if the bit is set, the tile is miss
      null
   }
 
-  final val SubTileSize = 16
+  final val SubTileSize = 8
   private def  getRegion(x:Int,y:Int): TextureRegion ={
      new TextureRegion(sheet,x*SubTileSize,y*SubTileSize,SubTileSize,SubTileSize)
   }

@@ -5,6 +5,6 @@ package com.semtexzv.tiki.Map
   */
 object BlockType extends Enumeration(0) {
   type BlockType = Value
-  val  None,Dirt,Stone,Ore,Bedrock = Value
+  val  Wall,Exit = Value
 
 }

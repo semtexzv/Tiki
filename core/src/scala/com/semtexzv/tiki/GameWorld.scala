@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.entities.{ItemDrop, Player, Entity, EntityType}
+import com.semtexzv.tiki.entities.{Player, Entity, EntityType}
 import EntityType.EntityType
 import com.semtexzv.tiki.Map.{Block, GameMap}
 
@@ -48,7 +48,8 @@ class GameWorld extends ContactListener  {
   world.setContactListener(this)
   world.setContinuousPhysics(true)
 
-  var player: Player = new Player(1, Game.ChunkHeight,world)
+  var map: GameMap = new GameMap(world)
+  var player: Player = new Player(map.w/2,map.h/2,world)
   var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
   var removedEntities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
   spawnEntity(player )
@@ -56,7 +57,6 @@ class GameWorld extends ContactListener  {
   var neededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
   var notNeededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
 
-  var map: GameMap = new GameMap(world)
   var retainTime = 0f
   var clicked = false
 
@@ -75,20 +75,6 @@ class GameWorld extends ContactListener  {
     Game.camera.zoom = Game.zoom
     Game.camera.update()
 
-    if(clicked){
-      var b = map.getBlock(clickX,clickY)
-      if(b != null){
-        b.damage(delta*100)
-        if(b.health< 0){
-          b.freeBody()
-          map.setBlock(clickX,clickY,null)
-          map.updateNighbors(clickX,clickY)
-          spawnEntity(new ItemDrop(clickX,clickY,b.getDrop,world))
-        }
-      }
-    }
-
-
     entities.foreach(e => {
       e.update(delta)
       val ex: Int = e.x.toInt
@@ -96,7 +82,7 @@ class GameWorld extends ContactListener  {
       for (y<- -7 to 7) {
         for (x <- -7 to 7) {
           var block = map.getBlock(x+ex,y+ey)
-          if(block!= null && block.typ != Game.Air){
+          if(block!= null){
             if(x > -4 && x < 4 && y> -4 && y< 4){
               neededBlocks += block
             }
@@ -179,13 +165,6 @@ class GameWorld extends ContactListener  {
         if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
           contact.setEnabled(false)
         }
-      }
-      else if (typeB == FixtureType.ItemDrop) {
-        var drop = contact.getFixtureB.getBody.getUserData.asInstanceOf[ItemDrop]
-        if (player.inventory.addItem(drop.item)) {
-          despawnEntity(contact.getFixtureB.getBody.getUserData.asInstanceOf[Entity])
-        }
-        contact.setEnabled(false)
       }
   }
 

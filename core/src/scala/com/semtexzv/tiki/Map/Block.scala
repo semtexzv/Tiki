@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
-import com.semtexzv.tiki.inventory.{ItemType, Item}
 import com.semtexzv.tiki.{TileManager, GameWorld, FixtureType, Game}
 
 import scala.util.Random
@@ -22,7 +21,7 @@ class Block(val x:Float,val y:Float,val typ:BlockType)  {
   var body : Body = null
 
   def obtainBody(): Unit ={
-    if(typ != BlockType.None && body == null&& health > 0) {
+    if(typ != null && body == null&& health > 0) {
       body = Game.world.bodyPool.obtain()
       body.setUserData(this)
       val fixt = body.getFixtureList.first()
@@ -64,12 +63,4 @@ class Block(val x:Float,val y:Float,val typ:BlockType)  {
       batch.draw(regions(3), x, y - 0.5f, 0.5f, 0.5f)
     }
   }
-
-  def getDrop: Item = {
-    typ match {
-      case BlockType.Dirt => new Item(ItemType.Dirt,1)
-      case _ => null
-    }
-  }
-
 }

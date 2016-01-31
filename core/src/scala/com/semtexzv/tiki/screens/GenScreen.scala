@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.{Gdx, InputProcessor, Screen}
 import com.semtexzv.tiki.Game
-import com.semtexzv.tiki.Map.MapGen
+import com.semtexzv.tiki.Map.{DungeonGen, MapGen}
 
 import scala.util.Random
 
@@ -15,9 +15,9 @@ import scala.util.Random
   */
 class GenScreen extends Screen with  InputProcessor
 {
-  def w = 1024
-  def h = 1024
-  var gen = new MapGen(w,h)
+  def w = 256
+  def h = 256
+  var gen = new DungeonGen(w,h)
   val batch = new SpriteBatch()
   val position = new Vector2()
   val speed = 100f
@@ -29,7 +29,7 @@ class GenScreen extends Screen with  InputProcessor
   }
 
   override def show(): Unit = {
-    Gdx.input.setInputProcessor(this)
+    Game.input.addProcessor(this)
   }
 
   override def render(delta: Float): Unit = {
@@ -77,7 +77,7 @@ class GenScreen extends Screen with  InputProcessor
     true
   }
   override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
-    gen = new MapGen(w,h)
+    gen = new DungeonGen(w,h)
     gen.generate(Random.nextLong())
     gen.preRender()
     true

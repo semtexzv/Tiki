@@ -15,29 +15,23 @@ import scala.util.Random
   * Created by Semtexzv on 1/27/2016.
   */
 class GameMap(world: World) {
-  var chunks: Array[Chunk] = new Array[Chunk](64)
 
   val chCount = 4
-
-  var gen = new MapGen(chCount * Game.ChunkWidth, Game.ChunkHeight)
+  val w = 256
+  val h = 256
+  var blocks: Array[Block] = new Array[Block](w*h)
+  var gen = new DungeonGen(w,h)
   gen.generate(Random.nextLong())
-
-  for (chx <- 0 until chCount) {
-    if (chunks(chx) == null) {
-      chunks(chx) = new Chunk(chx * Game.ChunkWidth)
-    }
-  }
-
-    for (y <- 0 until Game.ChunkHeight) {
-      for (x <- 0 until Game.ChunkWidth * (chCount - 1)) {
-        if (gen.map(gen.index(x, y)) != Game.Air)
-          setBlock(x, y, new Block(x, y, getBlockType(gen.map(gen.index(x, y)))))
+    for (y <- 0 until h) {
+      for (x <- 0 until w) {
+        if (gen.map(gen.index(x, y))!=gen.None)
+          setBlock(x, y, new Block(x, y, gen.getBlockType(gen.map(gen.index(x, y)))))
       }
     }
-    for (y <- 0 until Game.ChunkHeight) {
-      for (x <- 0 until Game.ChunkWidth* (chCount - 1)) {
-        if (gen.map(gen.index(x , y)) != Game.Air) {
-          updateBlockTexture(x , y)
+    for (y <- 0 until h) {
+      for (x <- 0 until w) {
+        if (gen.map(gen.index(x, y)) != gen.None) {
+          updateBlockTexture(x, y)
         }
       }
     }
@@ -71,42 +65,27 @@ class GameMap(world: World) {
 
 
 
-  def index(x: Int, y: Int) = x + y * Game.ChunkWidth
+  def index(x: Int, y: Int) = (x&w-1) + (y&h-1) *w
 
   def setBlock(x:Int,y:Int,block:Block) :Unit = {
     if (x >= 0 && y> 0) {
-      val c = chunks(x>>>Game.ChunkWidthShift)
-      if (c != null) {
-        c.blocks(index(x & Game.ChunkWidthMask, y & Game.ChunkHeightMask)) = block
-      }
+      blocks(index(x,y)) = block
     }
   }
 
   def getBlock(x:Int,y:Int) : Block = {
     if (x >= 0 && y> 0) {
-      val c = chunks(x>>>Game.ChunkWidthShift)
-      if(c!= null) {
-        return c.blocks(index(x & Game.ChunkWidthMask, y & Game.ChunkHeightMask))
-      }
+     return blocks(index(x,y))
     }
     null
   }
 
-  def getBlockType(mapTileType:Int): BlockType ={
-    mapTileType match {
-      case Game.Air => BlockType.None
-      case Game.Dirt => BlockType.Dirt
-      case Game.Rock => BlockType.Stone
-      case Game.Bedrock => BlockType.Bedrock
-      case _ => BlockType.None
-    }
-  }
 
   var batch = new SpriteBatch()
   def render(x:Int, y:Int): Unit ={
     batch.setProjectionMatrix(Game.camera.combined)
     batch.begin()
-    chunks.foreach((a) => if (a != null){ a.render(batch)})
+    blocks.foreach((a) => if (a != null){ a.render(batch)})
     batch.end()
   }
 

@@ -13,12 +13,6 @@ import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
   */
 object Game extends gGame {
 
-  final val ChunkWidth = 64
-  final val ChunkWidthMask = ChunkWidth-1
-  final val ChunkWidthShift = 6
-
-  final val ChunkHeight = 64
-  final val ChunkHeightMask = ChunkHeight-1
 
   var zoom: Float = 1f
 
@@ -30,22 +24,7 @@ object Game extends gGame {
   lazy val gameScreen = new GameScreen
   var world : GameWorld =  null
 
-  val Air = 0
-  val Dirt = 1
-  val Rock = 2
-  val Bedrock = 3
-  val Cave = 4
-  val Chest = 5
-  val Ore = 6
 
-  val colors = new Array[Color](64)
-  colors(Air) = Color.WHITE
-  colors(Dirt) = Color.BROWN
-  colors(Rock) = Color.GRAY
-  colors(Bedrock) = Color.DARK_GRAY
-  colors(Cave) = Color.RED
-  colors(Chest) = Color.BLACK
-  colors(Ore) = Color.GOLD
   var time = 0f
 
   override def create(): Unit = {
