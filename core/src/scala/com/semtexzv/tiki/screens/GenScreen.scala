@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.{Gdx, InputProcessor, Screen}
 import com.semtexzv.tiki.Game
-import com.semtexzv.tiki.Map.{DungeonGen, MapGen}
+import com.semtexzv.tiki.Map.DungeonGen
 
 import scala.util.Random
 

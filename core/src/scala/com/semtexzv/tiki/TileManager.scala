@@ -3,7 +3,6 @@ package com.semtexzv.tiki
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.semtexzv.tiki.Map.BlockType
-import com.semtexzv.tiki.Map.BlockType
 import com.semtexzv.tiki.Map.BlockType.BlockType
 
 import scala.collection.immutable.HashMap
@@ -13,7 +12,7 @@ import scala.collection.immutable.HashMap
   */
 object TileManager {
   lazy val sheet : Texture  = new Texture("sheet.png")
-
+  lazy val playerRegion : TextureRegion = new TextureRegion(sheet,0,0,24,24)
 
   final val testBlock = 1
 
@@ -91,7 +90,9 @@ Tile number is combination of these numbers, if the bit is set, the tile is miss
 
   var tileMap : HashMap[BlockType,HashMap[Int,TextureRegion]] = HashMap(
     BlockType.Wall -> dirtMap,
-    BlockType.Exit -> stoneMap)
+      BlockType.Ladder -> stoneMap,
+    BlockType.Exit -> stoneMap
+  )
 
   def getSubTile(blockType:BlockType,tileState:Int,tileIndex:Int): TextureRegion = {
     if(tileMap.contains(blockType)) {

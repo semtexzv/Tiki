@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.RandomXS128
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
+import com.semtexzv.tiki.Map.blocks.{ExitBlock, LadderBlock, WallBlock}
 import com.semtexzv.tiki.{TileManager, FixtureType, Game}
 
 import scala.util.Random
@@ -16,25 +17,35 @@ import scala.util.Random
   */
 class GameMap(world: World) {
 
-  val chCount = 4
   val w = 256
   val h = 256
   var blocks: Array[Block] = new Array[Block](w*h)
   var gen = new DungeonGen(w,h)
-  gen.generate(Random.nextLong())
+
+  def generate(): Unit ={
+    gen.generate(Random.nextLong())
     for (y <- 0 until h) {
       for (x <- 0 until w) {
-        if (gen.map(gen.index(x, y))!=gen.None)
-          setBlock(x, y, new Block(x, y, gen.getBlockType(gen.map(gen.index(x, y)))))
+        if (gen.map(gen.index(x, y))!=gen.None) {
+          setBlock(x, y, makeBlock(x,y))
+        }
       }
     }
     for (y <- 0 until h) {
       for (x <- 0 until w) {
-        if (gen.map(gen.index(x, y)) != gen.None) {
+        if (getBlock(x,y) != null) {
           updateBlockTexture(x, y)
         }
       }
     }
+  }
+  def makeBlock(x:Int,y:Int): Block ={
+    gen.map(gen.index(x,y)) match {
+      case Game.Wall => new WallBlock(x,y)
+      case Game.Ladder => new LadderBlock(x,y)
+      case Game.Exit => new ExitBlock(x,y)
+    }
+  }
 
 
   def updateBlockTexture(x: Int, y: Int): Unit = {
@@ -81,12 +92,9 @@ class GameMap(world: World) {
   }
 
 
-  var batch = new SpriteBatch()
-  def render(x:Int, y:Int): Unit ={
-    batch.setProjectionMatrix(Game.camera.combined)
-    batch.begin()
+  def render(batch:SpriteBatch): Unit ={
     blocks.foreach((a) => if (a != null){ a.render(batch)})
-    batch.end()
+
   }
 
 

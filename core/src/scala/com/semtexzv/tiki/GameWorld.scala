@@ -8,8 +8,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.entities.{Player, Entity, EntityType}
-import EntityType.EntityType
+import com.semtexzv.tiki.entities.{Coin, Player, Entity, EntityType}
 import com.semtexzv.tiki.Map.{Block, GameMap}
 
 import scala.collection.immutable.HashSet
@@ -35,11 +34,10 @@ class GameWorld extends ContactListener  {
       fdef.shape = shape
       shape.setAsBox(0.5f, 0.5f)
       var fixt = body.createFixture(fdef)
-      fixt.setUserData(FixtureType.GroundBlock)
+      fixt.setUserData(FixtureType.WallBlock)
       return body
     }
   }
-
 
   Box2D.init()
   var render = new Box2DDebugRenderer()
@@ -49,20 +47,19 @@ class GameWorld extends ContactListener  {
   world.setContinuousPhysics(true)
 
   var map: GameMap = new GameMap(world)
-  var player: Player = new Player(map.w/2,map.h/2,world)
+
+  var player: Player = new Player(world)
   var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
   var removedEntities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
-  spawnEntity(player )
-
+  spawnEntity(map.w/2,map.h/2,player)
+  LoadWorld()
   var neededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
   var notNeededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
 
-  var retainTime = 0f
   var clicked = false
 
   var clickX : Int = 0
   var clickY : Int = 0
-
 
   var batch = new SpriteBatch()
   var blockFlushTime = 0f
@@ -71,12 +68,21 @@ class GameWorld extends ContactListener  {
     Gdx.gl.glClearColor(ccl.r,ccl.g,ccl.b,1.0f)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
+    if(delta < 0.35f) {
+      world.step(delta, 3, 3)
+    }
+
+
     Game.camera.position.set(player.position.x, player.position.y, 0)
     Game.camera.zoom = Game.zoom
     Game.camera.update()
 
+    batch.setProjectionMatrix(Game.camera.combined)
+    batch.begin()
+
     entities.foreach(e => {
       e.update(delta)
+      e.render(batch)
       val ex: Int = e.x.toInt
       val ey: Int = e.y.toInt
       for (y<- -7 to 7) {
@@ -111,15 +117,19 @@ class GameWorld extends ContactListener  {
       blockFlushTime = 0f
     }
 
-    world.step(delta, 3, 3)
-    //println("Time: "+(System.nanoTime()-time)/1000000f)
 
-    map.render(0,0)
+    map.render(batch)
     render.render(world, Game.camera.combined)
+    batch.end()
+  }
+  def LoadWorld(): Unit ={
+    map.generate()
+    map.gen.coinSpawnPoints.foreach(a=>spawnEntity(a.x,a.y,new Coin(world)))
+
   }
 
-  def spawnEntity(e: Entity): Unit ={
-    e.onSpawn()
+  def spawnEntity(x:Float,y:Float,e: Entity): Unit ={
+    e.onSpawn(x,y)
     entities.add(e)
   }
   def despawnEntity(e:Entity): Unit ={
@@ -131,41 +141,59 @@ class GameWorld extends ContactListener  {
   }
 
   override def endContact(contact: Contact): Unit = {
-    var typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
-    var typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
-    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
+    var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
+    var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
+    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.WallBlock) {
       player.gndContacts -= 1
     }
-    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock) {
+    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
       player.wideContacts -= 1
+    }
+    if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
+      typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
+      player.ladderContacts -=1
+      player.gndContacts -=1
     }
   }
 
   override def beginContact(contact: Contact): Unit = {
-    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
-    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
-    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.GroundBlock) {
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
+    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.WallBlock) {
       player.gndContacts += 1
     }
-    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.GroundBlock) {
+    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
       player.wideContacts += 1
     }
+    if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
+      typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
+      player.ladderContacts +=1
+      player.gndContacts += 1
+    }
+    if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Coin )||
+      (typeB == FixtureType.PlayerCore && typeA == FixtureType.Coin)) {
+
+      despawnEntity(contact.getFixtureB.getBody.getUserData.asInstanceOf[Entity])
+      contact.setEnabled(false)
+
+    }
+
   }
 
   override def preSolve(contact: Contact, oldManifold: Manifold): Unit = {
-
-
-    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Int]
-    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Int]
-    if (typeA == FixtureType.PlayerBody)
-      if (typeB == FixtureType.GroundBlock) {
-        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y == -1) {
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
+    if (typeA == FixtureType.PlayerBody) {
+      if (typeB == FixtureType.WallBlock) {
+        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y != 0) {
           contact.setEnabled(false)
         }
         if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
           contact.setEnabled(false)
         }
       }
+
+    }
   }
 
 

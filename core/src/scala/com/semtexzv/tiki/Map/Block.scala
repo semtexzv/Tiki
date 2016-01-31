@@ -12,23 +12,19 @@ import scala.util.Random
 /**
   * Created by Semtexzv on 1/27/2016.
   */
-class Block(val x:Float,val y:Float,val typ:BlockType)  {
+abstract class Block(val x:Int, val y:Int, val typ:BlockType)  {
 
-  val Hash: Int = x.toInt+ Random.nextInt()
   var regions : Array[TextureRegion] = new Array[TextureRegion](4)
 
-  var health : Float = 100f
+
   var body : Body = null
 
+  def configureBody()
   def obtainBody(): Unit ={
-    if(typ != null && body == null&& health > 0) {
+    if(typ != null && body == null) {
       body = Game.world.bodyPool.obtain()
       body.setUserData(this)
-      val fixt = body.getFixtureList.first()
-      fixt.setDensity(0f)
-      fixt.setFriction(0f)
-      fixt.setRestitution(0f)
-      fixt.setUserData(FixtureType.GroundBlock)
+      configureBody()
       body.setTransform(x,y,0)
       this.body = body
     }
@@ -40,9 +36,6 @@ class Block(val x:Float,val y:Float,val typ:BlockType)  {
       Game.world.bodyPool.free(body)
       this.body = null
     }
-  }
-  def damage(amount:Float): Unit ={
-    health -=amount
   }
   def render(batch: SpriteBatch): Unit = {
    // batch.setColor(Game.colors(typ))

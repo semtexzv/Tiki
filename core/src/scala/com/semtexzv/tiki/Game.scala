@@ -13,6 +13,13 @@ import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
   */
 object Game extends gGame {
 
+  final val None = 0
+  final val Wall = 1
+  final val Ladder = 2
+  final val Exit = 3
+
+  val WallMask = 1
+  val PlayerMask = 2
 
   var zoom: Float = 1f
 
@@ -28,7 +35,7 @@ object Game extends gGame {
   var time = 0f
 
   override def create(): Unit = {
-    this.setScreen(new GameScreen)
+    this.setScreen(new GenScreen)
     Gdx.input.setInputProcessor(input)
   }
 

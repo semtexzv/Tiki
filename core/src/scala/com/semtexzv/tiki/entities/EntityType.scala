@@ -5,5 +5,5 @@ package com.semtexzv.tiki.entities
   */
 object EntityType extends Enumeration(0) {
   type EntityType = Value
-  val Player,Coin = Value
+  val Player,Coin,Enemy = Value
 }
