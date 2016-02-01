@@ -13,10 +13,18 @@ import com.semtexzv.tiki.screens.{GenScreen, GameScreen}
   */
 object Game extends gGame {
 
-  final val None = 0
-  final val Wall = 1
-  final val Ladder = 2
-  final val Exit = 3
+  final val Empty : Int= 0
+  final val Wall : Int= 1
+  final val Crate : Int= 2
+  final val Ladder : Int= 3
+  final val Wall50: Int = 4
+  final val Wall33 : Int= 5
+  final val Enemy : Int= 6
+  final val Spikes : Int= 7
+  final val Spikes50 : Int= 8
+  final val Spikes33 : Int= 9
+  final val Treasure : Int= 10
+  final val Obstacle53: Int = 11
 
   val WallMask = 1
   val PlayerMask = 2

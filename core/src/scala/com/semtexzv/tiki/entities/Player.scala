@@ -103,7 +103,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
 
     fdef.density = 0f
     fdef.isSensor = true
-    shape.setAsBox(w*0.9f,0.4f,new Vector2(0,-h/2),0)
+    shape.setAsBox(w*0.9f,0.1f,new Vector2(0,-h/2),0)
     fdef.filter.categoryBits = FixtureType.PlayerFeet
     fdef.filter.maskBits = FixtureType.WallBlock
     feetFixt = body.createFixture(fdef)
@@ -118,7 +118,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
 
     shape.setAsBox(0.1f,0.1f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.PlayerCore
-    fdef.filter.maskBits = (FixtureType.Coin | FixtureType.LadderBlock | FixtureType.LevelExit).toShort
+    fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit).toShort
     coreFixt = body.createFixture(fdef)
     coreFixt.getFilterData.categoryBits = FixtureType.PlayerCore
     coreFixt.setUserData(FixtureType.PlayerCore)

@@ -17,33 +17,30 @@ import scala.util.Random
   */
 class GameMap(world: World) {
 
-  val w = 256
-  val h = 256
-  var blocks: Array[Block] = new Array[Block](w*h)
-  var gen = new DungeonGen()
+  val rnx = 4
+  val rny = 4
+  var gen = new DungeonGen(rnx,rny)
+  var blocks: Array[Block] = new Array[Block](gen.w*gen.h)
+  var w :Int = 0
+  var h :Int = 0
 
-  def generate(): Unit ={
+  def generate(): Unit = {
     gen.generate(Random.nextLong())
-    for (y <- 0 until h) {
-      for (x <- 0 until w) {
-        if (gen.map(gen.index(x, y))!=gen.Empty) {
-          setBlock(x, y, makeBlock(x,y))
-        }
+    w = gen.w
+    h = gen.h
+    for (y <- 0 until h; x <- 0 until w) {
+      val px = x
+      val py = h - y - 1
+      blocks(index(px, py)) = gen.map(gen.index(x, y)) match {
+        case Game.Wall => new WallBlock(px, py)
+        case Game.Ladder => new LadderBlock(px, py)
+        case _ => null
       }
     }
-    for (y <- 0 until h) {
-      for (x <- 0 until w) {
-        if (getBlock(x,y) != null) {
-          updateBlockTexture(x, y)
-        }
+    for (y <- 0 until h; x <- 0 until w) {
+      if (getBlock(x, y) != null) {
+        updateBlockTexture(x, y)
       }
-    }
-  }
-  def makeBlock(x:Int,y:Int): Block ={
-    gen.map(gen.index(x,y)) match {
-      case Game.Wall => new WallBlock(x,y)
-      case Game.Ladder => new LadderBlock(x,y)
-      case Game.Exit => new ExitBlock(x,y)
     }
   }
 
@@ -73,19 +70,16 @@ class GameMap(world: World) {
       }
     }
   }
-
-
-
-  def index(x: Int, y: Int) = (x&w-1) + (y&h-1) *w
+  def index(x: Int, y: Int) = x + y *w
 
   def setBlock(x:Int,y:Int,block:Block) :Unit = {
-    if (x >= 0 && y> 0) {
+    if (x >= 0 && y>= 0 && x < w && y < h) {
       blocks(index(x,y)) = block
     }
   }
 
   def getBlock(x:Int,y:Int) : Block = {
-    if (x >= 0 && y> 0) {
+    if (x >= 0 && y>= 0 && x < w && y < h) {
      return blocks(index(x,y))
     }
     null

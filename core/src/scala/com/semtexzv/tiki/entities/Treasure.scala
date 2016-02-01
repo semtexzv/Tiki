@@ -9,8 +9,8 @@ import com.badlogic.gdx.physics.box2d._
 /**
   * Created by Semtexzv on 1/31/2016.
   */
-class Coin(world:World)  extends  Entity(world,EntityType.Coin){
-  var coinFixt: Fixture = null
+class Treasure(world:World)  extends  Entity(world,EntityType.Treasure){
+  var fixt: Fixture = null
 
 
   override def update(delta: Float): Unit = {
@@ -39,11 +39,11 @@ class Coin(world:World)  extends  Entity(world,EntityType.Coin){
     fdef.shape = shape
     shape.setAsBox(0.45f,0.45f)
 
-    fdef.filter.categoryBits = FixtureType.Coin
+    fdef.filter.categoryBits = FixtureType.Treasure
     fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.PlayerCore | FixtureType.WallBlock).toShort
 
-    coinFixt = body.createFixture(fdef)
-    coinFixt.setUserData(FixtureType.Coin)
+    fixt = body.createFixture(fdef)
+    fixt.setUserData(FixtureType.Treasure)
     body
   }
 }

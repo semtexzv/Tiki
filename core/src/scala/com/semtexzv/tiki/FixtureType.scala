@@ -11,7 +11,7 @@ object FixtureType {
   final val PlayerCore:Short = 8
   final val PlayerFeet: Short = 16
   final val PlayerWide: Short = 32
-  final val Coin : Short = 64
+  final val Treasure : Short = 64
   final val LevelExit :Short = 128
   final val Enemy: Short = 256
 }

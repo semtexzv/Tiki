@@ -8,10 +8,11 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.entities.{Coin, Player, Entity, EntityType}
-import com.semtexzv.tiki.Map.{Block, GameMap}
+import com.semtexzv.tiki.entities.{Treasure, Player, Entity, EntityType}
+import com.semtexzv.tiki.Map.{DungeonGen, Block, GameMap}
 
 import scala.collection.immutable.HashSet
+import scala.util.Random
 
 /**
   * Created by Semtexzv on 1/27/2016.
@@ -38,7 +39,6 @@ class GameWorld extends ContactListener  {
       return body
     }
   }
-
   Box2D.init()
   var render = new Box2DDebugRenderer()
 
@@ -51,10 +51,12 @@ class GameWorld extends ContactListener  {
   var player: Player = new Player(world)
   var entities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
   var removedEntities: scala.collection.mutable.Set[Entity] =  scala.collection.mutable.Set[Entity]()
-  spawnEntity(map.w/2,map.h/2,player)
-  LoadWorld()
   var neededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
   var notNeededBlocks: scala.collection.mutable.Set[Block] =  scala.collection.mutable.Set[Block]()
+
+  map.generate()
+  //todo, change once generation Y is changed
+  spawnEntity(map.gen.levelStart.x,map.gen.levelStart.y,player)
 
   var clicked = false
 
@@ -80,25 +82,6 @@ class GameWorld extends ContactListener  {
     batch.setProjectionMatrix(Game.camera.combined)
     batch.begin()
 
-    entities.foreach(e => {
-      e.update(delta)
-      e.render(batch)
-      val ex: Int = e.x.toInt
-      val ey: Int = e.y.toInt
-      for (y<- -7 to 7) {
-        for (x <- -7 to 7) {
-          var block = map.getBlock(x+ex,y+ey)
-          if(block!= null){
-            if(x > -4 && x < 4 && y> -4 && y< 4){
-              neededBlocks += block
-            }
-            else{
-              notNeededBlocks += block
-            }
-          }
-        }
-      }
-    })
     if(removedEntities.nonEmpty){
       removedEntities.foreach(a=>{
         a.onDespawn()
@@ -106,6 +89,25 @@ class GameWorld extends ContactListener  {
       })
       removedEntities.clear()
     }
+
+
+    entities.foreach(e => {
+      e.update(delta)
+      e.render(batch)
+      val ex: Int = e.x.toInt
+      val ey: Int = e.y.toInt
+      for (y <- -7 to 7; x <- -7 to 7) {
+        var block = map.getBlock(x + ex, y + ey)
+        if (block != null) {
+          if (x > -4 && x < 4 && y > -4 && y < 4) {
+            neededBlocks += block
+          }
+          else {
+            notNeededBlocks += block
+          }
+        }
+      }
+    })
 
     notNeededBlocks --= neededBlocks
     neededBlocks.foreach(_.obtainBody())
@@ -122,11 +124,7 @@ class GameWorld extends ContactListener  {
     render.render(world, Game.camera.combined)
     batch.end()
   }
-  def LoadWorld(): Unit ={
-    map.generate()
-    map.gen.coinSpawnPoints.foreach(a=>spawnEntity(a.x,a.y,new Coin(world)))
 
-  }
 
   def spawnEntity(x:Float,y:Float,e: Entity): Unit ={
     e.onSpawn(x,y)
@@ -136,14 +134,12 @@ class GameWorld extends ContactListener  {
     removedEntities.add(e)
   }
 
-  override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {
 
-  }
 
   override def endContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.WallBlock) {
+    if (typeA == FixtureType.PlayerFeet && (typeB == FixtureType.WallBlock || typeB == FixtureType.LadderBlock)) {
       player.gndContacts -= 1
     }
     if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
@@ -159,7 +155,7 @@ class GameWorld extends ContactListener  {
   override def beginContact(contact: Contact): Unit = {
     val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.PlayerFeet && typeB == FixtureType.WallBlock) {
+    if (typeA == FixtureType.PlayerFeet && (typeB == FixtureType.WallBlock || typeB == FixtureType.LadderBlock)) {
       player.gndContacts += 1
     }
     if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
@@ -170,8 +166,8 @@ class GameWorld extends ContactListener  {
       player.ladderContacts +=1
       player.gndContacts += 1
     }
-    if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Coin )||
-      (typeB == FixtureType.PlayerCore && typeA == FixtureType.Coin)) {
+    if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Treasure )||
+      (typeB == FixtureType.PlayerCore && typeA == FixtureType.Treasure)) {
 
       despawnEntity(contact.getFixtureB.getBody.getUserData.asInstanceOf[Entity])
       contact.setEnabled(false)
@@ -194,6 +190,9 @@ class GameWorld extends ContactListener  {
       }
 
     }
+  }
+  override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {
+
   }
 
 
