@@ -17,7 +17,7 @@ class GenScreen extends Screen with  InputProcessor
 {
   def w = 256
   def h = 256
-  var gen = new DungeonGen(w,h)
+  var gen = new DungeonGen()
   val batch = new SpriteBatch()
   val position = new Vector2()
   val speed = 100f
@@ -77,7 +77,7 @@ class GenScreen extends Screen with  InputProcessor
     true
   }
   override def touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean = {
-    gen = new DungeonGen(w,h)
+    gen = new DungeonGen()
     gen.generate(Random.nextLong())
     gen.preRender()
     true

@@ -20,13 +20,13 @@ class GameMap(world: World) {
   val w = 256
   val h = 256
   var blocks: Array[Block] = new Array[Block](w*h)
-  var gen = new DungeonGen(w,h)
+  var gen = new DungeonGen()
 
   def generate(): Unit ={
     gen.generate(Random.nextLong())
     for (y <- 0 until h) {
       for (x <- 0 until w) {
-        if (gen.map(gen.index(x, y))!=gen.None) {
+        if (gen.map(gen.index(x, y))!=gen.Empty) {
           setBlock(x, y, makeBlock(x,y))
         }
       }
