@@ -146,10 +146,10 @@ class GameWorld extends ContactListener  {
     despawnEntity(treasure)
   }
 
+
   override def endContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-
 
     if (typeA == FixtureType.PlayerFeet) {
       if(typeB == FixtureType.WallBlock) {
@@ -164,7 +164,9 @@ class GameWorld extends ContactListener  {
     if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
       typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
       player.ladderCoreContacts -=1
-
+    }
+    if(typeA == FixtureType.PlayerBody && typeB == FixtureType.Spikes){
+      player.spikesContacts -=1
     }
   }
 
@@ -189,8 +191,10 @@ class GameWorld extends ContactListener  {
       (typeB == FixtureType.PlayerCore && typeA == FixtureType.Treasure)) {
 
       onTreasureCollected(contact.getFixtureB.getBody.getUserData.asInstanceOf[Treasure])
-      contact.setEnabled(false)
-
+     // contact.setEnabled(false)
+    }
+    if(typeA == FixtureType.PlayerBody && typeB == FixtureType.Spikes){
+      player.spikesContacts +=1
     }
 
   }

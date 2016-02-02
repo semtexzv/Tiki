@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.{TileManager, FixtureType}
+import com.semtexzv.tiki.{Game, TileManager, FixtureType}
 
 /**
   * Created by Semtexzv on 1/28/2016.
@@ -22,6 +22,19 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
   var wideContacts:Int = 0
   var ladderCoreContacts: Int = 0
   var ladderFeetContacts: Int = 0
+  var spikesContacts:Int = 0
+
+  var lastDamageTime = 0f
+  var damageCooldown = 1f
+  var health = 100f
+
+  def isInDamageCooldown = Game.time -lastDamageTime < damageCooldown
+  def causeDamage(amount:Float): Unit ={
+    if(Game.time-lastDamageTime>damageCooldown ){
+      lastDamageTime = Game.time
+      health -= amount
+    }
+  }
 
   val ladderUpSpeed =2f
   val ladderDownSpeed =2f
@@ -29,7 +42,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
 
   val acc = 60f
   var mx = 4f
-  val jumpSpeed =14f
+  val jumpSpeed =12f
 
   val gscale = 3f
 
@@ -72,10 +85,20 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
       }
     }
     body.setLinearVelocity(vel)
+
+    if(spikesContacts > 0 ){
+      causeDamage(1)
+    }
   }
 
   override def render(batch: SpriteBatch): Unit = {
-    batch.draw(TileManager.playerRegion,super.x-0.3f,super.y-0.3f,0.6f,0.6f)
+    if(isInDamageCooldown) {
+      if ((Game.time * 10).toInt % 2 == 1) {
+        batch.draw(TileManager.playerRegion, super.x - 0.3f, super.y - 0.3f, 0.6f, 0.6f)
+      }
+    }else{
+      batch.draw(TileManager.playerRegion, super.x - 0.3f, super.y - 0.3f, 0.6f, 0.6f)
+    }
   }
 
   override def createBody(x:Float,y:Float): Body = {
@@ -102,7 +125,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     shape.setAsBox(w,h)
 
     fdef.filter.categoryBits = FixtureType.PlayerBody
-    fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock ).toShort
+    fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock | FixtureType.Spikes).toShort
     bodyFixt = body.createFixture(fdef)
     bodyFixt.setUserData(FixtureType.PlayerBody)
 
@@ -122,9 +145,10 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     wideFixt.setUserData(FixtureType.PlayerWide)
 
 
+
     shape.setAsBox(0.15f,0.15f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.PlayerCore
-    fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit).toShort
+    fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit | FixtureType.Spikes).toShort
     coreFixt = body.createFixture(fdef)
     coreFixt.getFilterData.categoryBits = FixtureType.PlayerCore
     coreFixt.setUserData(FixtureType.PlayerCore)

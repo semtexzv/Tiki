@@ -20,4 +20,5 @@ class LadderBlock(x:Int,y:Int) extends Block(x,y,BlockType.Ladder){
     fixt.setFilterData(filter)
     fixt.setUserData(FixtureType.LadderBlock)
   }
+
 }

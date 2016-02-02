@@ -16,7 +16,6 @@ abstract class Block(val x:Int, val y:Int, val typ:BlockType)  {
 
   var regions : Array[TextureRegion] = new Array[TextureRegion](4)
 
-
   var body : Body = null
 
   def configureBody()
@@ -55,6 +54,18 @@ abstract class Block(val x:Int, val y:Int, val typ:BlockType)  {
     //3-BR
     if (regions(3) != null) {
       batch.draw(regions(3), x, y - 0.5f, 0.5f, 0.5f)
+    }
+  }
+  def updateTexture(map:GameMap): Unit = {
+    var state = 0
+    for (yy <- -1 to 1; xx <- -1 to 1) {
+      var neighbor = map.getBlock(x + xx, y + yy)
+      if (neighbor == null || neighbor.typ != typ) {
+        state |= TileManager.getIncrement(xx, yy)
+      }
+    }
+    for (i <- 0 until 4) {
+      regions(i) = TileManager.getSubTile(typ, state, i)
     }
   }
 }

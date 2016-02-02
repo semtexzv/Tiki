@@ -298,8 +298,8 @@ class DungeonGen(rnx:Int,rny:Int) {
       |1 E 0 0 L 0 0 1 T 0
       |1 1 1 1 L 0 1 1 1 0
       |1 1 0 0 L 0 0 T 0 0
-      |0 0 0 0 L 1 1 1 1 0
-      |0 0 1 L 0 0 0 0 0 0
+      |0 0 5 0 L 1 1 1 1 0
+      |0 0 1 L 5 0 0 0 0 0
       |1 1 1 1 0 0 1 1 1 1
     """.stripMargin,2)
 
@@ -310,8 +310,8 @@ class DungeonGen(rnx:Int,rny:Int) {
       |0 L 0 1 0 0 0 T 1 0
       |1 L 1 1 1 1 1 0 1 0
       |1 L 0 0 0 1 0 0 T 0
-      |0 L 0 0 0 1 L 1 1 0
-      |0 L 0 0 0 L L 0 0 0
+      |0 L 0 0 5 1 L 1 1 0
+      |0 L 0 0 0 L L 0 5 0
       |1 1 1 1 0 0 1 1 1 1
     """.stripMargin,3)
 /*
@@ -332,7 +332,7 @@ var t0 = new RoomTemplate(
       "1 0 0 1 0 1 0 0 0 1 " +
       "1 0 0 0 0 1 0 0 0 1 " +
       "0 0 0 0 0 1 0 0 0 0 " +
-      "0 0 0 0 0 0 0 0 0 0 " +
+      "0 0 2 0 0 0 0 0 0 0 " +
       "1 1 1 1 1 1 1 1 1 1 ",1)
 
   var t2 = new RoomTemplate(

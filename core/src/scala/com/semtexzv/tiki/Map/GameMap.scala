@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.{Vector2, RandomXS128}
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
-import com.semtexzv.tiki.Map.blocks.{ExitBlock, LadderBlock, WallBlock}
+import com.semtexzv.tiki.Map.blocks.{SpikesBlock, ExitBlock, LadderBlock, WallBlock}
 import com.semtexzv.tiki.{TileManager, FixtureType, Game}
 
 import scala.util.Random
@@ -36,6 +36,7 @@ class GameMap(world: World) {
         case Game.Wall => blocks(index(px, py)) = new WallBlock(px, py)
         case Game.Ladder =>blocks(index(px, py)) =  new LadderBlock(px, py)
         case Game.Treasure => treasureSpawnPoints.add(new Vector2(px,py))
+        case Game.Spikes => blocks(index(px,py)) = new SpikesBlock(px,py)
         case _ => null
       }
     }
@@ -48,20 +49,9 @@ class GameMap(world: World) {
 
 
   def updateBlockTexture(x: Int, y: Int): Unit = {
-    val block = getBlock(x,y)
-    if(block != null) {
-      var state = 0
-      for (yy <- -1 to 1) {
-        for (xx <- -1 to 1) {
-          var neighbor = getBlock(x + xx, y + yy)
-          if (neighbor == null || neighbor.typ != block.typ) {
-            state |= TileManager.getIncrement(xx, yy)
-          }
-        }
-      }
-      for (i<- 0 until 4){
-        block.regions(i) = TileManager.getSubTile(block.typ,state,i)
-      }
+    val block = getBlock(x, y)
+    if (block != null) {
+      block.updateTexture(this)
     }
   }
 
@@ -72,6 +62,7 @@ class GameMap(world: World) {
       }
     }
   }
+
   def index(x: Int, y: Int) = x + y *w
 
   def setBlock(x:Int,y:Int,block:Block) :Unit = {

@@ -14,4 +14,5 @@ object FixtureType {
   final val Treasure : Short = 64
   final val LevelExit :Short = 128
   final val Enemy: Short = 256
+  final val Spikes: Short = 512
 }
