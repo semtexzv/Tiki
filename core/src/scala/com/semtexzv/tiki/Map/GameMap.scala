@@ -30,7 +30,7 @@ class GameMap(world: World) {
     h = gen.h
     for (y <- 0 until h; x <- 0 until w) {
       val px = x
-      val py = h - y - 1
+      val py = y
       blocks(index(px, py)) = gen.map(gen.index(x, y)) match {
         case Game.Wall => new WallBlock(px, py)
         case Game.Ladder => new LadderBlock(px, py)

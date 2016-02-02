@@ -43,7 +43,7 @@ object Game extends gGame {
   var time = 0f
 
   override def create(): Unit = {
-    this.setScreen(new GenScreen)
+    this.setScreen(new GameScreen)
     Gdx.input.setInputProcessor(input)
   }
 

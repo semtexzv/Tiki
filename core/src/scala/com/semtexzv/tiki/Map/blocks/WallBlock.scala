@@ -10,7 +10,7 @@ import com.semtexzv.tiki.Map.{BlockType, Block}
 class WallBlock(x:Int,y:Int) extends Block(x,y,BlockType.Wall){
   val filter = new Filter()
   filter.categoryBits = FixtureType.WallBlock
-  filter.maskBits = -1
+  filter.maskBits = (FixtureType.PlayerBody | FixtureType.PlayerFeet |FixtureType.PlayerWide).toShort
   override def configureBody(): Unit = {
     val fixt = body.getFixtureList.first()
     fixt.setSensor(false)

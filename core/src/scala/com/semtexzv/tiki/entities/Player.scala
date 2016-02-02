@@ -92,7 +92,9 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     fdef.friction = 1f
     fdef.restitution = 0f
     var shape = new PolygonShape()
+    //var shape = new CircleShape()
     fdef.shape = shape
+    //shape.setRadius(0.45f)
     shape.setAsBox(w,h)
 
     fdef.filter.categoryBits = FixtureType.PlayerBody
@@ -103,13 +105,13 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
 
     fdef.density = 0f
     fdef.isSensor = true
-    shape.setAsBox(w*0.9f,0.1f,new Vector2(0,-h/2),0)
+    shape.setAsBox(w*0.9f,0.1f,new Vector2(0,-h),0)
     fdef.filter.categoryBits = FixtureType.PlayerFeet
     fdef.filter.maskBits = FixtureType.WallBlock
     feetFixt = body.createFixture(fdef)
     feetFixt.setUserData(FixtureType.PlayerFeet)
 
-    shape.setAsBox(w*1.25f,h*0.95f,new Vector2(0,0f),0)
+    shape.setAsBox(w*1.25f,h*0.85f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.PlayerWide
     fdef.filter.maskBits = FixtureType.WallBlock
     wideFixt = body.createFixture(fdef)

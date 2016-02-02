@@ -139,6 +139,8 @@ class GameWorld extends ContactListener  {
   override def endContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
+
+
     if (typeA == FixtureType.PlayerFeet && (typeB == FixtureType.WallBlock || typeB == FixtureType.LadderBlock)) {
       player.gndContacts -= 1
     }
@@ -148,7 +150,7 @@ class GameWorld extends ContactListener  {
     if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
       typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
       player.ladderContacts -=1
-      player.gndContacts -=1
+
     }
   }
 
@@ -164,7 +166,6 @@ class GameWorld extends ContactListener  {
     if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
       typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
       player.ladderContacts +=1
-      player.gndContacts += 1
     }
     if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Treasure )||
       (typeB == FixtureType.PlayerCore && typeA == FixtureType.Treasure)) {
@@ -181,7 +182,7 @@ class GameWorld extends ContactListener  {
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
     if (typeA == FixtureType.PlayerBody) {
       if (typeB == FixtureType.WallBlock) {
-        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y != 0) {
+        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y < 0) {
           contact.setEnabled(false)
         }
         if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {

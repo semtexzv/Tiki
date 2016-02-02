@@ -149,6 +149,8 @@ class DungeonGen(rnx:Int,rny:Int) {
     }
   }
 
+
+
   def generate(seed: Long): Unit = {
     noise = new SimplexNoise(seed)
     random = new RandomXS128(seed)
@@ -173,7 +175,10 @@ class DungeonGen(rnx:Int,rny:Int) {
       throw new Exception("Map invalid")
     }
       //Todo, proper level start and end search
-
+    val lsx = sx+startRoom.x * rw +rw/2
+    val lsy = sy+startRoom.y * rh +rh/2
+    levelStart.set(lsx,lsy)
+    placeBlockBuffer(lsx-1,lsy-1,3,3,startBuf,false)
 
   }
 
@@ -186,8 +191,8 @@ class DungeonGen(rnx:Int,rny:Int) {
       pixmap.drawPixel(x, y, Integer.reverseBytes(col.toIntBits))
     }
 
-    pixmap.drawPixel(levelStart.x.toInt, levelStart.y.toInt, Integer.reverseBytes(Color.PINK.toIntBits))
-    pixmap.drawPixel(levelExit.x.toInt, levelExit.y.toInt, Integer.reverseBytes(Color.GREEN.cpy().lerp(Color.WHITE,0.2f).toIntBits))
+    pixmap.drawPixel(levelStart.x.toInt,h -1- levelStart.y.toInt, Integer.reverseBytes(Color.PINK.toIntBits))
+    pixmap.drawPixel(levelExit.x.toInt, h -1- levelExit.y.toInt, Integer.reverseBytes(Color.GREEN.cpy().lerp(Color.WHITE,0.2f).toIntBits))
 
     texture = new Texture(pixmap, Pixmap.Format.RGB888, false)
   }
@@ -248,20 +253,21 @@ class DungeonGen(rnx:Int,rny:Int) {
       }
     }
     var templ :RoomTemplate=  templates(ttyp)(random.nextInt(templates(ttyp).length))
-    placeBlockBuffer(x*rw,y*rh,rw,rh,templ.blocks,tflip)
+    placeBlockBuffer(sx+x*rw,sy+y*rh,rw,rh,templ.blocks,tflip)
   }
 
   //Warning !!! w ,h must be dimensions of the buffer
   def placeBlockBuffer(x:Int,y:Int,w:Int,h:Int,buf:Array[Int],flipX:Boolean) {
-    for (yy <- 0 until rh; xx <- 0 until rw) {
-      val dx = sx + x + xx
-      val dy = sy + y + yy
+    for (yy <- 0 until h; xx <- 0 until w) {
+      val dx = x + xx
+      val dy = y + yy
 
       val bx = if (flipX) w - xx - 1 else xx
       val by = h-yy -1// block buffer is from player, must reverse Y
       map(index(dx, dy)) = buf(bx + by * w)
     }
   }
+  var startBuf = Array( 3,0,3, 3,0,3, 1,1,1)
 
   var t0 = new RoomTemplate(
       "1 1 1 1 0 0 0 0 0 0 " +
