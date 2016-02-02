@@ -23,7 +23,7 @@ class Treasure(world:World)  extends  Entity(world,EntityType.Treasure){
 
   override def createBody(x:Float,y:Float): Body = {
     var bdef = new BodyDef
-    bdef.`type` = BodyType.DynamicBody
+    bdef.`type` = BodyType.StaticBody
     bdef.fixedRotation=true
     bdef.allowSleep = false
 

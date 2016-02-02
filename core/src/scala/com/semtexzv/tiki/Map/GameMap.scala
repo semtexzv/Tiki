@@ -3,7 +3,7 @@ package com.semtexzv.tiki.Map
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
-import com.badlogic.gdx.math.RandomXS128
+import com.badlogic.gdx.math.{Vector2, RandomXS128}
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
@@ -21,6 +21,7 @@ class GameMap(world: World) {
   val rny = 4
   var gen = new DungeonGen(rnx,rny)
   var blocks: Array[Block] = new Array[Block](gen.w*gen.h)
+  var treasureSpawnPoints: scala.collection.mutable.Set[Vector2] = scala.collection.mutable.Set[Vector2]()
   var w :Int = 0
   var h :Int = 0
 
@@ -31,9 +32,10 @@ class GameMap(world: World) {
     for (y <- 0 until h; x <- 0 until w) {
       val px = x
       val py = y
-      blocks(index(px, py)) = gen.map(gen.index(x, y)) match {
-        case Game.Wall => new WallBlock(px, py)
-        case Game.Ladder => new LadderBlock(px, py)
+      gen.map(gen.index(x, y)) match {
+        case Game.Wall => blocks(index(px, py)) = new WallBlock(px, py)
+        case Game.Ladder =>blocks(index(px, py)) =  new LadderBlock(px, py)
+        case Game.Treasure => treasureSpawnPoints.add(new Vector2(px,py))
         case _ => null
       }
     }

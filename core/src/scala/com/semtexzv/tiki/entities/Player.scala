@@ -20,19 +20,23 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
 
   var gndContacts :Int = 0
   var wideContacts:Int = 0
-  var ladderContacts: Int = 0
+  var ladderCoreContacts: Int = 0
+  var ladderFeetContacts: Int = 0
 
   val ladderUpSpeed =2f
   val ladderDownSpeed =2f
-  def standing :Boolean = math.abs(body.getLinearVelocity.y ) < 0.01f && gndContacts >0
+  def standing :Boolean =  gndContacts >0 || ladderFeetContacts >0
 
-  val acc = 80f
-  var mx = 5f
+  val acc = 60f
+  var mx = 4f
+  val jumpSpeed =14f
 
+  val gscale = 3f
 
   val w = 0.3f
   val h = 0.3f
 
+  needsBlocks = true
   def position: Vector2 = body.getPosition
   var double = true
 
@@ -49,7 +53,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     else {
       vel.set(0, vel.y)
     }
-    if(ladderContacts>0){
+    if(ladderCoreContacts >0){
       body.setGravityScale(0f)
       if (Gdx.input.isKeyPressed(Keys.UP) ) {
         vel.set(vel.x, ladderUpSpeed)
@@ -62,13 +66,11 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
       }
     }
     else{
-      body.setGravityScale(1f)
+      body.setGravityScale(gscale)
       if (Gdx.input.isKeyPressed(Keys.UP) && standing) {
-        vel.set(vel.x, 12)
+        vel.set(vel.x, jumpSpeed)
       }
     }
-
-
     body.setLinearVelocity(vel)
   }
 
@@ -81,6 +83,8 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     bdef.`type` = BodyType.DynamicBody
     bdef.fixedRotation=true
     bdef.allowSleep = false
+    bdef.bullet = true
+
 
     val body = world.createBody(bdef)
     body.setTransform( x,y,0)
@@ -88,9 +92,9 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     body.setUserData(this)
 
     var fdef = new FixtureDef
-    fdef.density = 2f
+    fdef.density = 1f
     fdef.friction = 1f
-    fdef.restitution = 0f
+    fdef.restitution =0.1f
     var shape = new PolygonShape()
     //var shape = new CircleShape()
     fdef.shape = shape
@@ -98,16 +102,16 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     shape.setAsBox(w,h)
 
     fdef.filter.categoryBits = FixtureType.PlayerBody
-    fdef.filter.maskBits = FixtureType.WallBlock
+    fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock ).toShort
     bodyFixt = body.createFixture(fdef)
     bodyFixt.setUserData(FixtureType.PlayerBody)
 
 
     fdef.density = 0f
     fdef.isSensor = true
-    shape.setAsBox(w*0.9f,0.1f,new Vector2(0,-h),0)
+    shape.setAsBox(w*0.8f,0.1f,new Vector2(0,-h),0)
     fdef.filter.categoryBits = FixtureType.PlayerFeet
-    fdef.filter.maskBits = FixtureType.WallBlock
+    fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock ).toShort
     feetFixt = body.createFixture(fdef)
     feetFixt.setUserData(FixtureType.PlayerFeet)
 
@@ -118,7 +122,7 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     wideFixt.setUserData(FixtureType.PlayerWide)
 
 
-    shape.setAsBox(0.1f,0.1f,new Vector2(0,0f),0)
+    shape.setAsBox(0.15f,0.15f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.PlayerCore
     fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit).toShort
     coreFixt = body.createFixture(fdef)

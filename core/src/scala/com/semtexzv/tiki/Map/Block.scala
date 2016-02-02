@@ -23,6 +23,7 @@ abstract class Block(val x:Int, val y:Int, val typ:BlockType)  {
   def obtainBody(): Unit ={
     if(typ != null && body == null) {
       body = Game.world.bodyPool.obtain()
+
       body.setUserData(this)
       configureBody()
       body.setTransform(x,y,0)

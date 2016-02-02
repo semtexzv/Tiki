@@ -9,6 +9,7 @@ import com.semtexzv.tiki.entities.EntityType.EntityType
   */
 abstract class Entity(world:World, typ:EntityType) {
   var body: Body = null
+  var needsBlocks = false
   def createBody(x:Float,y:Float) : Body
   def onSpawn(x:Float,y:Float): Unit ={
     body = createBody(x,y)

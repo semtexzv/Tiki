@@ -1,5 +1,6 @@
 package com.semtexzv.tiki
 
+import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.Pool
 import com.badlogic.gdx.{Input, InputProcessor, Gdx}
@@ -28,9 +29,9 @@ class GameWorld extends ContactListener  {
       var body = world.createBody(bdef)
       body.setUserData(this)
       var fdef = new FixtureDef
-      fdef.density = 0f
+      fdef.density = 1000f
       fdef.friction = 0f
-      fdef.restitution = 0f
+      fdef.restitution = 1f
       var shape = new PolygonShape()
       fdef.shape = shape
       shape.setAsBox(0.5f, 0.5f)
@@ -42,7 +43,7 @@ class GameWorld extends ContactListener  {
   Box2D.init()
   var render = new Box2DDebugRenderer()
 
-  val world = new box2d.World(new Vector2(0, -30f), true)
+  val world = new box2d.World(new Vector2(0, -10f), false)
   world.setContactListener(this)
   world.setContinuousPhysics(true)
 
@@ -57,6 +58,7 @@ class GameWorld extends ContactListener  {
   map.generate()
   //todo, change once generation Y is changed
   spawnEntity(map.gen.levelStart.x,map.gen.levelStart.y,player)
+  map.treasureSpawnPoints.foreach(s=> spawnEntity(s.x,s.y,new Treasure(world)))
 
   var clicked = false
 
@@ -65,19 +67,21 @@ class GameWorld extends ContactListener  {
 
   var batch = new SpriteBatch()
   var blockFlushTime = 0f
+
   def render(delta: Float): Unit = {
+    var delta = 0.02f
     val ccl  =Color.CYAN
     Gdx.gl.glClearColor(ccl.r,ccl.g,ccl.b,1.0f)
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-
-    if(delta < 0.35f) {
-      world.step(delta, 3, 3)
-    }
 
 
     Game.camera.position.set(player.position.x, player.position.y, 0)
     Game.camera.zoom = Game.zoom
     Game.camera.update()
+    if(delta < 0.100f) {
+      world.step(delta/2, 3, 3)
+      world.step(delta/2, 3, 3)
+    }
 
     batch.setProjectionMatrix(Game.camera.combined)
     batch.begin()
@@ -94,16 +98,18 @@ class GameWorld extends ContactListener  {
     entities.foreach(e => {
       e.update(delta)
       e.render(batch)
-      val ex: Int = e.x.toInt
-      val ey: Int = e.y.toInt
-      for (y <- -7 to 7; x <- -7 to 7) {
-        var block = map.getBlock(x + ex, y + ey)
-        if (block != null) {
-          if (x > -4 && x < 4 && y > -4 && y < 4) {
-            neededBlocks += block
-          }
-          else {
-            notNeededBlocks += block
+      if(e.needsBlocks) {
+        val ex: Int = e.x.toInt
+        val ey: Int = e.y.toInt
+        for (y <- -7 to 7; x <- -7 to 7) {
+          var block = map.getBlock(x + ex, y + ey)
+          if (block != null) {
+            if (x > -4 && x < 4 && y > -4 && y < 4) {
+              neededBlocks += block
+            }
+            else {
+              notNeededBlocks += block
+            }
           }
         }
       }
@@ -123,6 +129,7 @@ class GameWorld extends ContactListener  {
     map.render(batch)
     render.render(world, Game.camera.combined)
     batch.end()
+
   }
 
 
@@ -134,22 +141,29 @@ class GameWorld extends ContactListener  {
     removedEntities.add(e)
   }
 
-
+  def onTreasureCollected(treasure:Treasure): Unit ={
+    Gdx.app.log("Treasure","Collected")
+    despawnEntity(treasure)
+  }
 
   override def endContact(contact: Contact): Unit = {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
 
 
-    if (typeA == FixtureType.PlayerFeet && (typeB == FixtureType.WallBlock || typeB == FixtureType.LadderBlock)) {
-      player.gndContacts -= 1
+    if (typeA == FixtureType.PlayerFeet) {
+      if(typeB == FixtureType.WallBlock) {
+        player.gndContacts -= 1
+      } else if( typeB == FixtureType.LadderBlock) {
+        player.ladderFeetContacts -= 1
+      }
     }
     if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
       player.wideContacts -= 1
     }
     if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
       typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
-      player.ladderContacts -=1
+      player.ladderCoreContacts -=1
 
     }
   }
@@ -157,20 +171,24 @@ class GameWorld extends ContactListener  {
   override def beginContact(contact: Contact): Unit = {
     val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.PlayerFeet && (typeB == FixtureType.WallBlock || typeB == FixtureType.LadderBlock)) {
-      player.gndContacts += 1
+    if (typeA == FixtureType.PlayerFeet) {
+      if(typeB == FixtureType.WallBlock) {
+        player.gndContacts += 1
+      } else if( typeB == FixtureType.LadderBlock) {
+        player.ladderFeetContacts += 1
+      }
     }
     if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
       player.wideContacts += 1
     }
     if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
       typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
-      player.ladderContacts +=1
+      player.ladderCoreContacts +=1
     }
     if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Treasure )||
       (typeB == FixtureType.PlayerCore && typeA == FixtureType.Treasure)) {
 
-      despawnEntity(contact.getFixtureB.getBody.getUserData.asInstanceOf[Entity])
+      onTreasureCollected(contact.getFixtureB.getBody.getUserData.asInstanceOf[Treasure])
       contact.setEnabled(false)
 
     }
@@ -182,10 +200,16 @@ class GameWorld extends ContactListener  {
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
     if (typeA == FixtureType.PlayerBody) {
       if (typeB == FixtureType.WallBlock) {
-        if (player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y < 0) {
-          contact.setEnabled(false)
+          if ((player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y < 0)||
+            (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0)){
+            contact.setEnabled(false)
+          }
+      }
+      else if (typeB == FixtureType.LadderBlock) {
+        if (contact.getWorldManifold.getNormal.y < 0 && !Gdx.input.isKeyPressed(Keys.DOWN) && player.ladderCoreContacts ==0) {
+          contact.setEnabled(true)
         }
-        if (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0) {
+        else{
           contact.setEnabled(false)
         }
       }
