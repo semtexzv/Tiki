@@ -29,7 +29,7 @@ class Enemy(world:World) extends Entity(world,EntityType.Enemy){
     shape.setAsBox(0.45f,0.45f)
 
     fdef.filter.categoryBits = FixtureType.Enemy
-    fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.PlayerCore | FixtureType.WallBlock | FixtureType.PlayerBody).toShort
+    fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.EntityCore | FixtureType.WallBlock | FixtureType.EntityBody).toShort
 
     fixt = body.createFixture(fdef)
     fixt.setUserData(FixtureType.Enemy)

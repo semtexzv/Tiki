@@ -40,7 +40,7 @@ class Treasure(world:World)  extends  Entity(world,EntityType.Treasure){
     shape.setAsBox(0.45f,0.45f)
 
     fdef.filter.categoryBits = FixtureType.Treasure
-    fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.PlayerCore | FixtureType.WallBlock).toShort
+    fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.EntityCore | FixtureType.WallBlock).toShort
 
     fixt = body.createFixture(fdef)
     fixt.setUserData(FixtureType.Treasure)

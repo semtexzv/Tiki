@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.entities.{Treasure, Player, Entity, EntityType}
 import com.semtexzv.tiki.Map.{DungeonGen, Block, GameMap}
-
+import scala.collection.JavaConversions._
 import scala.collection.immutable.HashSet
 import scala.util.Random
 
@@ -130,6 +130,8 @@ class GameWorld extends ContactListener  {
     render.render(world, Game.camera.combined)
     batch.end()
 
+   println(world.getContactList.count(_ =>true))
+    //todo, iterate over all contacts, changing needed variables and calling needed functions like causeDamage
   }
 
 
@@ -151,21 +153,21 @@ class GameWorld extends ContactListener  {
     var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
 
-    if (typeA == FixtureType.PlayerFeet) {
+    if (typeA == FixtureType.EntityFeet) {
       if(typeB == FixtureType.WallBlock) {
         player.gndContacts -= 1
       } else if( typeB == FixtureType.LadderBlock) {
         player.ladderFeetContacts -= 1
       }
     }
-    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
+    if (typeA == FixtureType.EntityWide && typeB == FixtureType.WallBlock) {
       player.wideContacts -= 1
     }
-    if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
-      typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
+    if(typeA == FixtureType.EntityCore && typeB == FixtureType.LadderBlock ||
+      typeB == FixtureType.EntityCore && typeA == FixtureType.LadderBlock){
       player.ladderCoreContacts -=1
     }
-    if(typeA == FixtureType.PlayerBody && typeB == FixtureType.Spikes){
+    if(typeA == FixtureType.EntityBody && typeB == FixtureType.Spikes){
       player.spikesContacts -=1
     }
   }
@@ -173,27 +175,27 @@ class GameWorld extends ContactListener  {
   override def beginContact(contact: Contact): Unit = {
     val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.PlayerFeet) {
+    if (typeA == FixtureType.EntityFeet) {
       if(typeB == FixtureType.WallBlock) {
         player.gndContacts += 1
       } else if( typeB == FixtureType.LadderBlock) {
         player.ladderFeetContacts += 1
       }
     }
-    if (typeA == FixtureType.PlayerWide && typeB == FixtureType.WallBlock) {
+    if (typeA == FixtureType.EntityWide && typeB == FixtureType.WallBlock) {
       player.wideContacts += 1
     }
-    if(typeA == FixtureType.PlayerCore && typeB == FixtureType.LadderBlock ||
-      typeB == FixtureType.PlayerCore && typeA == FixtureType.LadderBlock){
+    if(typeA == FixtureType.EntityCore && typeB == FixtureType.LadderBlock ||
+      typeB == FixtureType.EntityCore && typeA == FixtureType.LadderBlock){
       player.ladderCoreContacts +=1
     }
-    if ((typeA == FixtureType.PlayerCore && typeB == FixtureType.Treasure )||
-      (typeB == FixtureType.PlayerCore && typeA == FixtureType.Treasure)) {
+    if ((typeA == FixtureType.EntityCore && typeB == FixtureType.Treasure )||
+      (typeB == FixtureType.EntityCore && typeA == FixtureType.Treasure)) {
 
       onTreasureCollected(contact.getFixtureB.getBody.getUserData.asInstanceOf[Treasure])
      // contact.setEnabled(false)
     }
-    if(typeA == FixtureType.PlayerBody && typeB == FixtureType.Spikes){
+    if(typeA == FixtureType.EntityBody && typeB == FixtureType.Spikes){
       player.spikesContacts +=1
     }
 
@@ -202,7 +204,7 @@ class GameWorld extends ContactListener  {
   override def preSolve(contact: Contact, oldManifold: Manifold): Unit = {
     val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
     val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.PlayerBody) {
+    if (typeA == FixtureType.EntityBody) {
       if (typeB == FixtureType.WallBlock) {
           if ((player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y < 0)||
             (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0)){

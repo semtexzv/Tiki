@@ -11,7 +11,7 @@ class SpikesBlock(x:Int,y:Int) extends Block(x,y,BlockType.Spikes){
   //todo, Create a way to have halfway blocks for spikes
   val filter = new Filter()
   filter.categoryBits = FixtureType.Spikes
-  filter.maskBits = (FixtureType.PlayerBody ).toShort
+  filter.maskBits = (FixtureType.EntityBody ).toShort
   override def configureBody(): Unit = {
     val fixt = body.getFixtureList.first()
     fixt.setSensor(true)

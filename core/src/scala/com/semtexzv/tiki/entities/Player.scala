@@ -13,6 +13,74 @@ import com.semtexzv.tiki.{Game, TileManager, FixtureType}
   */
 class Player(world:World) extends Entity(world:World,EntityType.Player){
 
+  object bodyControl extends  FixtureControl{
+    override var typ: Short = FixtureType.EntityBody
+
+    /* Normal will point from this body to the other,IF this is the B body in collision we reverse the normal ,
+     since bo2d reports it from A to B */
+    override def shouldCollide(other: FixtureControl,normal: Vector2): Boolean = {
+      !(other.typ==FixtureType.WallBlock &&( gndContacts == 0 && normal.y <0)|| (wideContacts ==0 && normal.x !=0))
+    }
+    override def onBeginContact(other: FixtureControl): Unit = {
+    }
+    override def onEndContact(other: FixtureControl): Unit = {
+    }
+  }
+  object feetControl extends  FixtureControl{
+    override var typ: Short = FixtureType.EntityFeet
+
+    override def shouldCollide(other: FixtureControl, normal: Vector2): Boolean = {true}
+
+    override def onBeginContact(other: FixtureControl): Unit = {
+      if(other.typ == FixtureType.WallBlock)
+        Player.this.gndContacts +=1
+      else if(other.typ == FixtureType.LadderBlock)
+        Player.this.ladderFeetContacts +=1
+    }
+
+    override def onEndContact(other: FixtureControl): Unit = {
+    if(other.typ == FixtureType.WallBlock)
+      Player.this.gndContacts -=1
+    else if(other.typ == FixtureType.LadderBlock)
+      Player.this.ladderFeetContacts -=1
+    }
+
+  }
+  object wideControl extends FixtureControl{
+    override var typ: Short = FixtureType.EntityWide
+
+    override def shouldCollide(other: FixtureControl, normal: Vector2): Boolean = ???
+
+    override def onBeginContact(other: FixtureControl): Unit = {
+      if(other.typ == FixtureType.WallBlock){
+        Player.this.wideContacts +=1
+      }
+    }
+    override def onEndContact(other: FixtureControl): Unit = {
+      if(other.typ == FixtureType.WallBlock){
+        Player.this.wideContacts -=1
+      }
+    }
+
+  }
+  object coreControl extends  FixtureControl{
+    override var typ: Short = FixtureType.EntityCore
+
+    override def shouldCollide(other: FixtureControl, normal: Vector2): Boolean = ???
+
+    override def onBeginContact(other: FixtureControl): Unit = {
+      if(other.typ == FixtureType.LadderBlock){
+        ladderCoreContacts +=1
+      }
+    }
+    override def onEndContact(other: FixtureControl): Unit = {
+      if(other.typ == FixtureType.LadderBlock){
+        ladderCoreContacts -=1
+      }
+    }
+
+  }
+
   var bodyFixt: Fixture = null
   var feetFixt: Fixture = null
   var wideFixt: Fixture = null
@@ -124,34 +192,33 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     //shape.setRadius(0.45f)
     shape.setAsBox(w,h)
 
-    fdef.filter.categoryBits = FixtureType.PlayerBody
+    fdef.filter.categoryBits = FixtureType.EntityBody
     fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock | FixtureType.Spikes).toShort
     bodyFixt = body.createFixture(fdef)
-    bodyFixt.setUserData(FixtureType.PlayerBody)
+    bodyFixt.setUserData(FixtureType.EntityBody)
 
 
     fdef.density = 0f
     fdef.isSensor = true
     shape.setAsBox(w*0.8f,0.1f,new Vector2(0,-h),0)
-    fdef.filter.categoryBits = FixtureType.PlayerFeet
+    fdef.filter.categoryBits = FixtureType.EntityFeet
     fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock ).toShort
     feetFixt = body.createFixture(fdef)
-    feetFixt.setUserData(FixtureType.PlayerFeet)
+    feetFixt.setUserData(FixtureType.EntityFeet)
 
     shape.setAsBox(w*1.25f,h*0.85f,new Vector2(0,0f),0)
-    fdef.filter.categoryBits = FixtureType.PlayerWide
+    fdef.filter.categoryBits = FixtureType.EntityWide
     fdef.filter.maskBits = FixtureType.WallBlock
     wideFixt = body.createFixture(fdef)
-    wideFixt.setUserData(FixtureType.PlayerWide)
+    wideFixt.setUserData(FixtureType.EntityWide)
 
 
 
     shape.setAsBox(0.15f,0.15f,new Vector2(0,0f),0)
-    fdef.filter.categoryBits = FixtureType.PlayerCore
+    fdef.filter.categoryBits = FixtureType.EntityCore
     fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit | FixtureType.Spikes).toShort
     coreFixt = body.createFixture(fdef)
-    coreFixt.getFilterData.categoryBits = FixtureType.PlayerCore
-    coreFixt.setUserData(FixtureType.PlayerCore)
+    coreFixt.setUserData(FixtureType.EntityCore)
 
     body
   }
