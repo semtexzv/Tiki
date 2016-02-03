@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.{Vector2, RandomXS128}
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
 import com.semtexzv.tiki.Map.BlockType.BlockType
-import com.semtexzv.tiki.Map.blocks.{SpikesBlock, ExitBlock, LadderBlock, WallBlock}
+import com.semtexzv.tiki.Map.blocks.{SpikesBlock, LadderBlock, WallBlock}
 import com.semtexzv.tiki.{TileManager, FixtureType, Game}
 
 import scala.util.Random

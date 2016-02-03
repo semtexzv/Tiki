@@ -1,6 +1,7 @@
 package com.semtexzv.tiki.entities
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d.{Fixture, Body}
 import com.semtexzv.tiki.{FixtureType, TileManager}
@@ -12,6 +13,14 @@ import com.badlogic.gdx.physics.box2d._
 class Treasure(world:World)  extends  Entity(world,EntityType.Treasure){
   var fixt: Fixture = null
 
+  object fixtControl extends  FixtureControl{
+    override var typ: Short = FixtureType.Treasure
+    override def shouldCollide(other: FixtureControl, normal: Vector2): Boolean = {
+      true
+    }
+    override def onEndContact(other: FixtureControl): Unit = {}
+    override def onBeginContact(other: FixtureControl): Unit = {}
+  }
 
   override def update(delta: Float): Unit = {
 
@@ -43,7 +52,7 @@ class Treasure(world:World)  extends  Entity(world,EntityType.Treasure){
     fdef.filter.maskBits = (FixtureType.LadderBlock | FixtureType.EntityCore | FixtureType.WallBlock).toShort
 
     fixt = body.createFixture(fdef)
-    fixt.setUserData(FixtureType.Treasure)
+    fixt.setUserData(fixtControl)
     body
   }
 }

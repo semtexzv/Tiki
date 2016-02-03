@@ -19,8 +19,14 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     /* Normal will point from this body to the other,IF this is the B body in collision we reverse the normal ,
      since bo2d reports it from A to B */
     override def shouldCollide(other: FixtureControl,normal: Vector2): Boolean = {
-      !(other.typ==FixtureType.WallBlock &&( gndContacts == 0 && normal.y <0)|| (wideContacts ==0 && normal.x !=0))
+     if(other.typ == FixtureType.WallBlock){
+       return !((Player.this.gndContacts <=0 && normal.y <0)||(Player.this.wideContacts <=0 && normal.x !=0 ))
+     }else if (other.typ == FixtureType.LadderBlock){
+       return normal.y <0 && !Gdx.input.isKeyPressed(Keys.DOWN)&& Player.this.ladderCoreContacts == 0
+     }
+     else return true
     }
+
     override def onBeginContact(other: FixtureControl): Unit = {
     }
     override def onEndContact(other: FixtureControl): Unit = {
@@ -80,11 +86,6 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     }
 
   }
-
-  var bodyFixt: Fixture = null
-  var feetFixt: Fixture = null
-  var wideFixt: Fixture = null
-  var coreFixt: Fixture = null
 
   var gndContacts :Int = 0
   var wideContacts:Int = 0
@@ -187,15 +188,13 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     fdef.friction = 1f
     fdef.restitution =0.1f
     var shape = new PolygonShape()
-    //var shape = new CircleShape()
     fdef.shape = shape
-    //shape.setRadius(0.45f)
     shape.setAsBox(w,h)
 
     fdef.filter.categoryBits = FixtureType.EntityBody
     fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock | FixtureType.Spikes).toShort
-    bodyFixt = body.createFixture(fdef)
-    bodyFixt.setUserData(FixtureType.EntityBody)
+    val bodyFixt = body.createFixture(fdef)
+    bodyFixt.setUserData(bodyControl)
 
 
     fdef.density = 0f
@@ -203,22 +202,22 @@ class Player(world:World) extends Entity(world:World,EntityType.Player){
     shape.setAsBox(w*0.8f,0.1f,new Vector2(0,-h),0)
     fdef.filter.categoryBits = FixtureType.EntityFeet
     fdef.filter.maskBits = (FixtureType.WallBlock | FixtureType.LadderBlock ).toShort
-    feetFixt = body.createFixture(fdef)
-    feetFixt.setUserData(FixtureType.EntityFeet)
+    val feetFixt = body.createFixture(fdef)
+    feetFixt.setUserData(feetControl)
 
     shape.setAsBox(w*1.25f,h*0.85f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.EntityWide
     fdef.filter.maskBits = FixtureType.WallBlock
-    wideFixt = body.createFixture(fdef)
-    wideFixt.setUserData(FixtureType.EntityWide)
+    val wideFixt = body.createFixture(fdef)
+    wideFixt.setUserData(wideControl)
 
 
 
     shape.setAsBox(0.15f,0.15f,new Vector2(0,0f),0)
     fdef.filter.categoryBits = FixtureType.EntityCore
     fdef.filter.maskBits = (FixtureType.Treasure | FixtureType.LadderBlock | FixtureType.LevelExit | FixtureType.Spikes).toShort
-    coreFixt = body.createFixture(fdef)
-    coreFixt.setUserData(FixtureType.EntityCore)
+    val coreFixt = body.createFixture(fdef)
+    coreFixt.setUserData(coreControl)
 
     body
   }

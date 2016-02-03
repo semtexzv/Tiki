@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.physics.box2d
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType
 import com.badlogic.gdx.physics.box2d._
-import com.semtexzv.tiki.entities.{Treasure, Player, Entity, EntityType}
+import com.semtexzv.tiki.entities._
 import com.semtexzv.tiki.Map.{DungeonGen, Block, GameMap}
 import scala.collection.JavaConversions._
 import scala.collection.immutable.HashSet
@@ -150,77 +150,24 @@ class GameWorld extends ContactListener  {
 
 
   override def endContact(contact: Contact): Unit = {
-    var typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
-    var typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-
-    if (typeA == FixtureType.EntityFeet) {
-      if(typeB == FixtureType.WallBlock) {
-        player.gndContacts -= 1
-      } else if( typeB == FixtureType.LadderBlock) {
-        player.ladderFeetContacts -= 1
-      }
-    }
-    if (typeA == FixtureType.EntityWide && typeB == FixtureType.WallBlock) {
-      player.wideContacts -= 1
-    }
-    if(typeA == FixtureType.EntityCore && typeB == FixtureType.LadderBlock ||
-      typeB == FixtureType.EntityCore && typeA == FixtureType.LadderBlock){
-      player.ladderCoreContacts -=1
-    }
-    if(typeA == FixtureType.EntityBody && typeB == FixtureType.Spikes){
-      player.spikesContacts -=1
-    }
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[FixtureControl]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[FixtureControl]
+    typeA.onEndContact(typeB)
+    typeB.onEndContact(typeA)
   }
 
   override def beginContact(contact: Contact): Unit = {
-    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
-    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.EntityFeet) {
-      if(typeB == FixtureType.WallBlock) {
-        player.gndContacts += 1
-      } else if( typeB == FixtureType.LadderBlock) {
-        player.ladderFeetContacts += 1
-      }
-    }
-    if (typeA == FixtureType.EntityWide && typeB == FixtureType.WallBlock) {
-      player.wideContacts += 1
-    }
-    if(typeA == FixtureType.EntityCore && typeB == FixtureType.LadderBlock ||
-      typeB == FixtureType.EntityCore && typeA == FixtureType.LadderBlock){
-      player.ladderCoreContacts +=1
-    }
-    if ((typeA == FixtureType.EntityCore && typeB == FixtureType.Treasure )||
-      (typeB == FixtureType.EntityCore && typeA == FixtureType.Treasure)) {
-
-      onTreasureCollected(contact.getFixtureB.getBody.getUserData.asInstanceOf[Treasure])
-     // contact.setEnabled(false)
-    }
-    if(typeA == FixtureType.EntityBody && typeB == FixtureType.Spikes){
-      player.spikesContacts +=1
-    }
-
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[FixtureControl]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[FixtureControl]
+    typeA.onBeginContact(typeB)
+    typeB.onBeginContact(typeA)
   }
 
   override def preSolve(contact: Contact, oldManifold: Manifold): Unit = {
-    val typeA = contact.getFixtureA.getUserData.asInstanceOf[Short]
-    val typeB = contact.getFixtureB.getUserData.asInstanceOf[Short]
-    if (typeA == FixtureType.EntityBody) {
-      if (typeB == FixtureType.WallBlock) {
-          if ((player.gndContacts <= 0 && contact.getWorldManifold.getNormal.y < 0)||
-            (player.wideContacts <= 0 && contact.getWorldManifold.getNormal.x != 0)){
-            contact.setEnabled(false)
-          }
-      }
-      else if (typeB == FixtureType.LadderBlock) {
-        if (contact.getWorldManifold.getNormal.y < 0 && !Gdx.input.isKeyPressed(Keys.DOWN) && player.ladderCoreContacts ==0) {
-          contact.setEnabled(true)
-        }
-        else{
-          contact.setEnabled(false)
-        }
-      }
-
-    }
+    val typeA = contact.getFixtureA.getUserData.asInstanceOf[FixtureControl]
+    val typeB = contact.getFixtureB.getUserData.asInstanceOf[FixtureControl]
+    contact.setEnabled(typeA.shouldCollide(typeB,contact.getWorldManifold.getNormal) &&
+      typeB.shouldCollide(typeA,contact.getWorldManifold.getNormal.scl(-1f)))
   }
   override def postSolve(contact: Contact, impulse: ContactImpulse): Unit = {
 
